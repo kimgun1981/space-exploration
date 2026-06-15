@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1026">
 <title>우주 탐험 — 아이들과 함께 보는 태양계</title>
 <meta name="description" content="행성을 누르면 한국어로 알려주는 아이들을 위한 3D 태양계 탐험 앱">
 <meta name="robots" content="noindex, nofollow">
@@ -486,8 +487,10 @@ const clock = new THREE.Clock();
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function resize(){
-  renderer.setSize(innerWidth, innerHeight, false);
-  camera.aspect = innerWidth/innerHeight;
+  const w = canvas.clientWidth || innerWidth;
+  const h = canvas.clientHeight || innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h;
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
