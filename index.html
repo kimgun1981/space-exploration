@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>우주 탐험 — 아이들과 함께 보는 태양계</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --space:#0b1026;
+    --ink:#eaf2ff;
+    --sun:#ffd166;
+    --sky:#7fd8f5;
+    --bubble:rgba(16,24,54,.88);
+    --chip:rgba(127,216,245,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100vh;height:100dvh;overflow:hidden;background:var(--space);font-family:'Gowun Dodum',sans-serif;color:var(--ink);
+    user-select:none;-webkit-user-select:none;touch-action:none;overscroll-behavior:none}
+  #c{position:fixed;inset:0;display:block}
+
+  /* ── 상단 바 ───────────────────────── */
+  header{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:10px;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;pointer-events:none}
+  h1{font-family:'Jua',sans-serif;font-size:clamp(19px,4.6vw,26px);font-weight:400;letter-spacing:.5px;
+    text-shadow:0 2px 14px rgba(127,216,245,.45);pointer-events:auto}
+  h1 span{color:var(--sun)}
+  .spacer{flex:1}
+  .mode,.snd{pointer-events:auto;border:1px solid rgba(234,242,255,.22);background:var(--bubble);color:var(--ink);
+    font-family:'Jua',sans-serif;font-size:14px;border-radius:999px;padding:8px 14px;cursor:pointer;
+    backdrop-filter:blur(8px);transition:transform .15s, background .2s}
+  .mode:active,.snd:active{transform:scale(.94)}
+  .snd{width:40px;height:40px;padding:0;display:grid;place-items:center;font-size:17px}
+  .snd.off{opacity:.45}
+
+  /* ── 안내말 ───────────────────────── */
+  #hint{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+    z-index:9;font-family:'Jua',sans-serif;font-size:15px;color:var(--sky);
+    background:var(--bubble);padding:8px 18px;border-radius:999px;border:1px solid rgba(127,216,245,.3);
+    backdrop-filter:blur(8px);animation:float 2.6s ease-in-out infinite;transition:opacity .4s;white-space:nowrap}
+  @keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+  #hint.hide{opacity:0;pointer-events:none}
+
+  /* ── 정보 말풍선 ───────────────────── */
+  #card{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(86px + env(safe-area-inset-bottom));
+    z-index:10;width:min(560px,calc(100% - 24px));background:var(--bubble);border:1px solid rgba(127,216,245,.32);
+    border-radius:22px;padding:16px 18px 14px;backdrop-filter:blur(12px);
+    box-shadow:0 8px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .35s, transform .35s}
+  #card.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+  #card .name{font-family:'Jua',sans-serif;font-size:22px;color:var(--sun);display:flex;align-items:center;gap:8px}
+  #card .name em{font-style:normal;font-size:13px;color:var(--sky);background:var(--chip);
+    border-radius:999px;padding:3px 10px}
+  #card .fact{margin-top:8px;font-size:16px;line-height:1.65}
+  #card .row{margin-top:12px;display:flex;gap:8px}
+  #card button{flex:1;font-family:'Jua',sans-serif;font-size:15px;border:none;border-radius:14px;padding:11px 0;
+    cursor:pointer;transition:transform .15s}
+  #card button:active{transform:scale(.96)}
+  #speakBtn{background:linear-gradient(135deg,#ffd166,#ff9e54);color:#2a1b00}
+  #speakBtn.speaking{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,209,102,.55)}50%{box-shadow:0 0 0 9px rgba(255,209,102,0)}}
+  #closeBtn{background:rgba(234,242,255,.1);color:var(--ink);flex:0 0 64px}
+
+  /* ── 하단 행성 칩 ──────────────────── */
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;gap:8px;overflow-x:auto;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));scrollbar-width:none;
+    mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+  nav::-webkit-scrollbar{display:none}
+  .pill{flex:0 0 auto;font-family:'Jua',sans-serif;font-size:14px;color:var(--ink);background:var(--chip);
+    border:1px solid rgba(127,216,245,.25);border-radius:999px;padding:9px 15px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px);transition:transform .15s, background .2s}
+  .pill:active{transform:scale(.93)}
+  .pill.on{background:rgba(255,209,102,.22);border-color:var(--sun);color:var(--sun)}
+  .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 6px currentColor}
+
+  @media (max-width: 400px){
+    header{gap:6px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px}
+    h1{font-size:18px}
+    .mode{font-size:12px;padding:7px 11px}
+    .snd{width:36px;height:36px;font-size:15px}
+    #hint{font-size:13px;padding:7px 14px;top:calc(56px + env(safe-area-inset-top))}
+    #card{bottom:calc(78px + env(safe-area-inset-bottom));padding:14px 14px 12px}
+    #card .name{font-size:19px}
+    #card .fact{font-size:15px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #hint{animation:none}
+    #speakBtn.speaking{animation:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<header>
+  <h1>🪐 우주 <span>탐험</span></h1>
+  <div class="spacer"></div>
+  <button class="mode" id="modeBtn">✨ 이웃 별 보러 가기</button>
+  <button class="snd" id="sndBtn" title="소리 켜기/끄기">🔊</button>
+</header>
+
+<div id="hint">행성을 꾹 눌러 보세요!</div>
+
+<div id="card">
+  <div class="name"><span id="cName"></span><em id="cTag"></em></div>
+  <div class="fact" id="cFact"></div>
+  <div class="row">
+    <button id="speakBtn">🔊 다시 들려줘!</button>
+    <button id="closeBtn">닫기</button>
+  </div>
+</div>
+
+<nav id="nav"></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ════════════════════════════════════════════
+   우주 탐험 — 아이들을 위한 태양계 & 이웃 별
+   탭하면 설명이 뜨고, 한국어 음성으로 읽어줘요.
+   ════════════════════════════════════════════ */
+
+// ── 데이터 ──────────────────────────────────
+const PLANETS = [
+  {id:'sun',     name:'태양',   tag:'우리의 별',     emoji:'☀️', color:0xffd166, size:5.0, dist:0,    speed:0,
+   fact:'뜨겁게 타오르는 커다란 불덩어리 별이에요! 태양계 식구들을 모두 따뜻하게 비춰 주지요. 태양이 없으면 지구는 꽁꽁 얼어 버려요.'},
+  {id:'mercury', name:'수성',   tag:'가장 작은 행성', emoji:'🪨', color:0xb8a890, size:0.55, dist:9,  speed:1.6,
+   fact:'태양과 가장 가까운 꼬마 행성이에요. 낮에는 엄청 뜨겁고, 밤에는 엄청 추워요. 일 년이 겨우 88일이래요!'},
+  {id:'venus',   name:'금성',   tag:'샛별',          emoji:'🌕', color:0xf0c987, size:0.95, dist:12.5, speed:1.17,
+   fact:'태양계에서 가장 뜨거운 행성이에요. 두꺼운 구름 이불을 덮고 있거든요. 새벽 하늘에서 반짝이는 샛별이 바로 금성이에요!'},
+  {id:'earth',   name:'지구',   tag:'우리 집',       emoji:'🌍', color:0x4f9df7, size:1.0, dist:16,  speed:1.0,
+   fact:'우리가 사는 곳이에요! 시원한 물과 맑은 공기가 있어서 사람도, 동물도, 식물도 함께 살 수 있어요. 우주에서 보면 파란 구슬 같아요.'},
+  {id:'moon',    name:'달',     tag:'지구의 단짝',    emoji:'🌙', color:0xcfcfd6, size:0.27, dist:0, speed:0, isMoon:true,
+   fact:'지구의 단짝 친구예요! 매일 밤 지구 곁을 빙글빙글 돌아요. 어떤 날은 동그란 보름달, 어떤 날은 얇은 눈썹 같은 초승달로 보여요.'},
+  {id:'mars',    name:'화성',   tag:'빨간 행성',     emoji:'🔴', color:0xe06b4a, size:0.7, dist:20,  speed:0.8,
+   fact:'온통 붉은 모래로 덮인 빨간 행성이에요. 지금 이 순간에도 로봇 탐사차가 화성을 누비며 탐험하고 있어요. 언젠가 사람도 갈 수 있을까요?'},
+  {id:'jupiter', name:'목성',   tag:'제일 큰 형',    emoji:'🟠', color:0xd9a066, size:2.6, dist:27,  speed:0.44,
+   fact:'태양계에서 가장 큰 행성이에요! 지구가 1,300개나 들어갈 만큼 커요. 몸에 있는 커다란 빨간 점은 수백 년 동안 멈추지 않는 거대한 태풍이래요.'},
+  {id:'saturn',  name:'토성',   tag:'고리의 왕',     emoji:'💍', color:0xe8d5a3, size:2.2, dist:34,  speed:0.33, ring:true,
+   fact:'반짝이는 멋진 고리를 두른 행성이에요. 고리는 수많은 얼음과 돌 조각으로 만들어졌어요. 망원경으로 보면 정말 예뻐요!'},
+  {id:'uranus',  name:'천왕성', tag:'누워서 도는 별', emoji:'🩵', color:0x9fe3e0, size:1.5, dist:40,  speed:0.23,
+   fact:'청록색 얼음 행성이에요. 신기하게도 옆으로 누워서 빙글빙글 돌아요. 마치 데굴데굴 굴러가는 공 같지요?'},
+  {id:'neptune', name:'해왕성', tag:'가장 먼 행성',  emoji:'🔵', color:0x5a7bf0, size:1.45, dist:45, speed:0.18,
+   fact:'태양에서 가장 멀리 있는 파란 행성이에요. 태양계에서 바람이 제일 세게 부는 곳이래요. 너무 멀어서 태양 빛도 아주 약하게 닿아요.'},
+];
+
+const STARS = [
+  {id:'sol',      name:'태양',           tag:'우리가 출발한 곳', color:0xffd166, size:1.6, pos:[0,0,0],
+   fact:'여기서 보면 태양도 작은 별처럼 보여요. 반짝이는 것들은 모두 태양처럼 멀리 있는 별이에요. 우주는 정말 넓지요!'},
+  {id:'proxima',  name:'프록시마 센타우리', tag:'가장 가까운 이웃', color:0xff7b5c, size:1.0, pos:[16,-3,6],
+   fact:'태양에서 가장 가까운 이웃 별이에요. 그래도 빛의 빠르기로 4년이 넘게 걸려요. 작고 붉게 빛나는 별이랍니다.'},
+  {id:'alpha',    name:'알파 센타우리',    tag:'쌍둥이 별',       color:0xfff3c9, size:1.5, pos:[20,2,2],
+   fact:'두 개의 별이 서로 손을 잡고 빙글빙글 도는 쌍둥이 별이에요. 밤하늘 남쪽에서 아주 밝게 빛나요.'},
+  {id:'barnard',  name:'바너드별',        tag:'조용한 빨간 별',   color:0xff8866, size:0.85, pos:[-14,4,-8],
+   fact:'작고 조용한 빨간 별이에요. 별들 중에서 하늘을 가장 빨리 움직이는 별로 유명해요. 아주 오래오래 사는 별이래요.'},
+  {id:'sirius',   name:'시리우스',        tag:'밤하늘 최고 스타', color:0xcfe8ff, size:2.0, pos:[-26,-6,14],
+   fact:'밤하늘에서 가장 밝게 빛나는 별이에요! 겨울밤에 남쪽 하늘을 보면 보석처럼 반짝여요. 태양보다 두 배나 무거운 하얀 별이에요.'},
+  {id:'vega',     name:'직녀별 (베가)',    tag:'여름의 보석',     color:0xd8e6ff, size:1.7, pos:[10,14,-22],
+   fact:'여름밤 머리 위에서 반짝이는 밝은 별이에요. 견우와 직녀 이야기에 나오는 바로 그 직녀별이랍니다!'},
+  {id:'betel',    name:'베텔게우스',       tag:'붉은 거인',       color:0xff5e3a, size:2.6, pos:[-12,10,-30],
+   fact:'태양보다 700배나 큰 어마어마한 붉은 거인 별이에요. 나이가 많아서 언젠가 펑! 하고 멋진 불꽃놀이처럼 폭발할 거래요.'},
+  {id:'polaris',  name:'북극성',          tag:'길잡이 별',       color:0xfff8e0, size:1.5, pos:[4,24,-12],
+   fact:'언제나 북쪽 하늘 한자리에서 빛나는 길잡이 별이에요. 옛날 사람들은 이 별을 보고 길을 찾았답니다.'},
+];
+
+// ── 기본 셋업 ────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b1026);
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 4000);
+
+scene.add(new THREE.AmbientLight(0x8899bb, 0.55));
+const sunLight = new THREE.PointLight(0xfff2cc, 1.6, 600);
+scene.add(sunLight);
+
+// 별가루 배경
+(function makeStarfield(){
+  const N = 2200, pos = new Float32Array(N*3), col = new Float32Array(N*3);
+  const tint = [new THREE.Color(0xffffff), new THREE.Color(0xcfe4ff), new THREE.Color(0xffe9c9)];
+  for(let i=0;i<N;i++){
+    const r = 420 + Math.random()*900;
+    const t = Math.random()*Math.PI*2, p = Math.acos(2*Math.random()-1);
+    pos[i*3]   = r*Math.sin(p)*Math.cos(t);
+    pos[i*3+1] = r*Math.cos(p);
+    pos[i*3+2] = r*Math.sin(p)*Math.sin(t);
+    const c = tint[(Math.random()*3)|0];
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color', new THREE.BufferAttribute(col,3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({size:1.7, vertexColors:true, sizeAttenuation:true, transparent:true, opacity:.9})));
+})();
+
+// 부드러운 빛 번짐 스프라이트 텍스처
+function glowTexture(hex){
+  const s = 128, cv = document.createElement('canvas'); cv.width=cv.height=s;
+  const ctx = cv.getContext('2d');
+  const c = '#'+hex.toString(16).padStart(6,'0');
+  const g = ctx.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+  g.addColorStop(0,'rgba(255,255,255,1)');
+  g.addColorStop(0.25,c);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,s,s);
+  return new THREE.CanvasTexture(cv);
+}
+
+// ── 태양계 그룹 ──────────────────────────────
+const solarGroup = new THREE.Group();
+scene.add(solarGroup);
+const pickables = []; // 현재 모드에서 탭 가능한 메시
+
+function makePlanetMesh(p){
+  const mat = p.id==='sun'
+    ? new THREE.MeshBasicMaterial({color:p.color})
+    : new THREE.MeshStandardMaterial({color:p.color, roughness:.85, metalness:.05});
+  const m = new THREE.Mesh(new THREE.SphereGeometry(p.size, 40, 40), mat);
+  m.userData = p;
+  if(p.id==='sun'){
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(0xffd166), transparent:true, opacity:.85, depthWrite:false}));
+    glow.scale.setScalar(p.size*5.2); m.add(glow);
+  }
+  if(p.ring){
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(p.size*1.45, p.size*2.25, 64),
+      new THREE.MeshBasicMaterial({color:0xd9c79a, side:THREE.DoubleSide, transparent:true, opacity:.65}));
+    ring.rotation.x = Math.PI/2.25;
+    m.add(ring);
+  }
+  return m;
+}
+
+const bodies = {}; // id → {mesh, p, angle}
+PLANETS.forEach(p=>{
+  if(p.isMoon) return;
+  const mesh = makePlanetMesh(p);
+  solarGroup.add(mesh);
+  bodies[p.id] = {mesh, p, angle:Math.random()*Math.PI*2};
+  if(p.dist>0){
+    const orbit = new THREE.Mesh(
+      new THREE.RingGeometry(p.dist-0.035, p.dist+0.035, 128),
+      new THREE.MeshBasicMaterial({color:0x7fd8f5, transparent:true, opacity:.16, side:THREE.DoubleSide}));
+    orbit.rotation.x = Math.PI/2;
+    solarGroup.add(orbit);
+  }
+});
+// 달
+const moonData = PLANETS.find(p=>p.id==='moon');
+const moonMesh = makePlanetMesh(moonData);
+solarGroup.add(moonMesh);
+bodies.moon = {mesh:moonMesh, p:moonData, angle:0};
+
+// ── 이웃 별 그룹 ─────────────────────────────
+const starGroup = new THREE.Group();
+starGroup.visible = false;
+scene.add(starGroup);
+const starBodies = {};
+STARS.forEach(s=>{
+  const m = new THREE.Mesh(new THREE.SphereGeometry(s.size*0.5, 24, 24), new THREE.MeshBasicMaterial({color:s.color}));
+  m.position.set(...s.pos);
+  m.userData = s;
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(s.color), transparent:true, opacity:.9, depthWrite:false}));
+  glow.scale.setScalar(s.size*4.5);
+  m.add(glow);
+  starGroup.add(m);
+  starBodies[s.id] = {mesh:m, p:s};
+});
+
+// ── 카메라 컨트롤 (직접 구현: 드래그 회전 + 핀치/휠 줌) ──
+const ctrl = {
+  target: new THREE.Vector3(0,0,0),
+  theta: 0.9, phi: 1.15, radius: 70,
+  minR: 4, maxR: 160,
+  // 목표값(트윈)
+  tTarget: new THREE.Vector3(0,0,0), tRadius: 70,
+  followMesh: null,
+};
+function applyCamera(){
+  ctrl.phi = Math.max(0.15, Math.min(Math.PI-0.15, ctrl.phi));
+  ctrl.radius = Math.max(ctrl.minR, Math.min(ctrl.maxR, ctrl.radius));
+  const r = ctrl.radius;
+  camera.position.set(
+    ctrl.target.x + r*Math.sin(ctrl.phi)*Math.cos(ctrl.theta),
+    ctrl.target.y + r*Math.cos(ctrl.phi),
+    ctrl.target.z + r*Math.sin(ctrl.phi)*Math.sin(ctrl.theta));
+  camera.lookAt(ctrl.target);
+}
+
+const pointers = new Map();
+let dragDist = 0, downPos = null, pinchStart = 0, radiusStart = 0;
+
+canvas.addEventListener('pointerdown', e=>{
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(pointers.size===1){ dragDist=0; downPos={x:e.clientX,y:e.clientY}; }
+  if(pointers.size===2){
+    const [a,b]=[...pointers.values()];
+    pinchStart = Math.hypot(a.x-b.x, a.y-b.y);
+    radiusStart = ctrl.radius;
+  }
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!pointers.has(e.pointerId)) return;
+  const prev = pointers.get(e.pointerId);
+  const dx = e.clientX-prev.x, dy = e.clientY-prev.y;
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(pointers.size===1){
+    dragDist += Math.abs(dx)+Math.abs(dy);
+    ctrl.theta += dx*0.005;
+    ctrl.phi   -= dy*0.005;
+    ctrl.followMesh = null; // 사용자가 움직이면 따라가기 해제
+  } else if(pointers.size===2){
+    const [a,b]=[...pointers.values()];
+    const d = Math.hypot(a.x-b.x, a.y-b.y);
+    if(pinchStart>0){ ctrl.radius = radiusStart * (pinchStart/d); ctrl.tRadius = ctrl.radius; }
+  }
+});
+function pointerEnd(e){
+  const wasTap = pointers.size===1 && dragDist < 12 && downPos;
+  pointers.delete(e.pointerId);
+  if(wasTap) handleTap(downPos.x, downPos.y);
+  if(pointers.size<2) pinchStart=0;
+}
+canvas.addEventListener('pointerup', pointerEnd);
+canvas.addEventListener('pointercancel', pointerEnd);
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  ctrl.radius *= (1 + Math.sign(e.deltaY)*0.08);
+  ctrl.tRadius = ctrl.radius;
+}, {passive:false});
+
+// ── 탭 → 행성/별 선택 ────────────────────────
+const ray = new THREE.Raycaster();
+ray.params.Points = {threshold: 2};
+const ndc = new THREE.Vector2();
+
+function handleTap(x, y){
+  ndc.x =  (x/innerWidth)*2 - 1;
+  ndc.y = -(y/innerHeight)*2 + 1;
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(pickables, true);
+  if(!hits.length) return;
+  let obj = hits[0].object;
+  while(obj && !obj.userData.id) obj = obj.parent;
+  if(obj) select(obj.userData.id);
+}
+
+// ── 선택 / 카메라 트윈 / 카드 ─────────────────
+let mode = 'solar';
+let selectedId = null;
+const card = document.getElementById('card');
+const hint = document.getElementById('hint');
+
+function select(id){
+  const pool = mode==='solar' ? bodies : starBodies;
+  const b = pool[id];
+  if(!b) return;
+  selectedId = id;
+  ctrl.followMesh = b.mesh;
+  const wp = new THREE.Vector3(); b.mesh.getWorldPosition(wp);
+  ctrl.tTarget.copy(wp);
+  ctrl.tRadius = mode==='solar' ? Math.max(b.p.size*4.2, 5) : Math.max(b.p.size*6, 7);
+  showCard(b.p);
+  highlightPill(id);
+  hint.classList.add('hide');
+}
+
+function showCard(p){
+  document.getElementById('cName').textContent = (p.emoji?p.emoji+' ':'⭐ ') + p.name;
+  document.getElementById('cTag').textContent = p.tag;
+  document.getElementById('cFact').textContent = p.fact;
+  card.classList.add('show');
+  speak(`${p.name}. ${p.fact}`);
+}
+document.getElementById('closeBtn').onclick = ()=>{
+  card.classList.remove('show');
+  stopSpeak();
+  selectedId = null; ctrl.followMesh = null;
+  highlightPill(null);
+  ctrl.tTarget.set(0,0,0);
+  ctrl.tRadius = mode==='solar' ? 70 : 55;
+};
+
+// ── 한국어 음성 (TTS) ────────────────────────
+let soundOn = true;
+let koVoice = null;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  koVoice = vs.find(v=>v.lang==='ko-KR') || vs.find(v=>v.lang && v.lang.startsWith('ko')) || null;
+}
+if('speechSynthesis' in window){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+const speakBtn = document.getElementById('speakBtn');
+function speak(text){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR';
+  if(koVoice) u.voice = koVoice;
+  u.rate = 0.92;   // 아이들이 듣기 좋게 살짝 천천히
+  u.pitch = 1.05;
+  u.onstart = ()=> speakBtn.classList.add('speaking');
+  u.onend = u.onerror = ()=> speakBtn.classList.remove('speaking');
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  speakBtn.classList.remove('speaking');
+}
+speakBtn.onclick = ()=>{
+  const pool = mode==='solar' ? bodies : starBodies;
+  if(selectedId && pool[selectedId]){
+    const p = pool[selectedId].p;
+    speak(`${p.name}. ${p.fact}`);
+  }
+};
+const sndBtn = document.getElementById('sndBtn');
+sndBtn.onclick = ()=>{
+  soundOn = !soundOn;
+  sndBtn.textContent = soundOn ? '🔊' : '🔇';
+  sndBtn.classList.toggle('off', !soundOn);
+  if(!soundOn) stopSpeak();
+};
+
+// ── 모드 전환 (태양계 ↔ 이웃 별) ──────────────
+const modeBtn = document.getElementById('modeBtn');
+modeBtn.onclick = ()=>{
+  mode = mode==='solar' ? 'stars' : 'solar';
+  solarGroup.visible = mode==='solar';
+  starGroup.visible  = mode==='stars';
+  modeBtn.textContent = mode==='solar' ? '✨ 이웃 별 보러 가기' : '🪐 태양계로 돌아가기';
+  hint.textContent = mode==='solar' ? '행성을 꾹 눌러 보세요!' : '반짝이는 별을 눌러 보세요!';
+  hint.classList.remove('hide');
+  card.classList.remove('show');
+  stopSpeak();
+  selectedId = null; ctrl.followMesh = null;
+  ctrl.tTarget.set(0,0,0);
+  ctrl.tRadius = mode==='solar' ? 70 : 55;
+  rebuildPickables();
+  buildNav();
+  if(mode==='stars') speak('우와! 태양계 밖으로 나왔어요. 태양이 작아졌지요? 반짝이는 건 모두 이웃 별들이에요.');
+  else speak('태양계로 돌아왔어요! 행성을 꾹 눌러 보세요.');
+};
+function rebuildPickables(){
+  pickables.length = 0;
+  const pool = mode==='solar' ? bodies : starBodies;
+  Object.values(pool).forEach(b=> pickables.push(b.mesh));
+}
+rebuildPickables();
+
+// ── 하단 칩 내비게이션 ────────────────────────
+const nav = document.getElementById('nav');
+function buildNav(){
+  nav.innerHTML = '';
+  const list = mode==='solar' ? PLANETS : STARS;
+  list.forEach(p=>{
+    const btn = document.createElement('button');
+    btn.className = 'pill'; btn.dataset.id = p.id;
+    const c = '#'+p.color.toString(16).padStart(6,'0');
+    btn.innerHTML = `<span class="dot" style="background:${c};color:${c}"></span>${p.name}`;
+    btn.onclick = ()=> select(p.id);
+    nav.appendChild(btn);
+  });
+}
+function highlightPill(id){
+  nav.querySelectorAll('.pill').forEach(el=> el.classList.toggle('on', el.dataset.id===id));
+  const on = nav.querySelector('.pill.on');
+  if(on) on.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+}
+buildNav();
+
+// ── 애니메이션 루프 ──────────────────────────
+const clock = new THREE.Clock();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function resize(){
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+if(window.visualViewport) window.visualViewport.addEventListener('resize', resize);
+resize();
+
+function tick(){
+  requestAnimationFrame(tick);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  // 공전 / 자전
+  if(!reduceMotion){
+    Object.values(bodies).forEach(b=>{
+      const p = b.p;
+      if(p.isMoon){
+        const e = bodies.earth.mesh.position;
+        b.angle += dt*2.2;
+        b.mesh.position.set(e.x + Math.cos(b.angle)*2.1, e.y, e.z + Math.sin(b.angle)*2.1);
+      } else if(p.dist>0){
+        b.angle += dt*p.speed*0.12;
+        b.mesh.position.set(Math.cos(b.angle)*p.dist, 0, Math.sin(b.angle)*p.dist);
+      }
+      b.mesh.rotation.y += dt*0.4;
+    });
+    // 별 반짝임
+    Object.values(starBodies).forEach((b,i)=>{
+      const glow = b.mesh.children[0];
+      if(glow) glow.material.opacity = 0.75 + Math.sin(t*2 + i*1.7)*0.18;
+    });
+  }
+
+  // 선택한 천체 따라가기 + 부드러운 트윈
+  if(ctrl.followMesh){
+    const wp = new THREE.Vector3(); ctrl.followMesh.getWorldPosition(wp);
+    ctrl.tTarget.copy(wp);
+  }
+  ctrl.target.lerp(ctrl.tTarget, 1 - Math.pow(0.0015, dt));
+  ctrl.radius += (ctrl.tRadius - ctrl.radius) * (1 - Math.pow(0.002, dt));
+
+  applyCamera();
+  renderer.render(scene, camera);
+}
+tick();
+
+// 첫 화면: 살짝 기울어진 전경 + 환영 멘트(소리는 사용자 첫 터치 후에만 가능하므로 생략)
+ctrl.tRadius = 70;
+</script>
+</body>
+</html>
