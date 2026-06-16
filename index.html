@@ -27,6 +27,7 @@
     --chip:rgba(127,216,245,.14);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}  /* display 지정 요소(.quizWrap, .more)가 hidden을 덮지 않도록 */
   html,body{height:100vh;height:100dvh;overflow:hidden;background:var(--space);font-family:'Gowun Dodum',sans-serif;color:var(--ink);
     user-select:none;-webkit-user-select:none;touch-action:none;overscroll-behavior:none}
   #c{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;display:block}
@@ -132,6 +133,46 @@
     #hint{animation:none}
     #speakBtn.speaking{animation:none}
   }
+
+  /* ── 천체 이름 라벨 (3D 위에 떠 있는 클릭 가능한 이름표) ── */
+  #labels{position:fixed;inset:0;z-index:8;pointer-events:none;transition:opacity .2s}
+  #labels.moving{opacity:0}  /* 화면을 움직이는 동안엔 숨겨 떨림(어긋남) 방지 */
+  #labels.moving .lbl{pointer-events:none}
+  .lbl{position:absolute;left:0;top:0;will-change:transform;font-family:'Jua',sans-serif;font-size:12px;
+    color:var(--ink);background:rgba(11,16,38,.5);border:1px solid rgba(127,216,245,.25);
+    border-radius:999px;padding:2px 9px;white-space:nowrap;pointer-events:auto;cursor:pointer;
+    backdrop-filter:blur(4px);opacity:.85;transition:opacity .25s;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+  .lbl.dim{opacity:0;pointer-events:none}
+
+  /* ── 플로팅 버튼 (처음 위치) ── */
+  .fab{position:fixed;left:12px;z-index:10;width:44px;height:44px;border-radius:50%;
+    border:1px solid rgba(234,242,255,.22);background:var(--bubble);color:var(--ink);
+    font-size:19px;cursor:pointer;backdrop-filter:blur(8px);display:grid;place-items:center;
+    transition:transform .15s, opacity .25s}
+  .fab:active{transform:scale(.9)}
+  #homeFab{bottom:calc(64px + env(safe-area-inset-bottom))}
+
+  /* ── 퀴즈 ── */
+  .quizWrap{position:fixed;inset:0;z-index:20;display:grid;place-items:center;
+    background:rgba(4,8,22,.66);backdrop-filter:blur(6px);padding:18px}
+  .quizBox{width:min(440px,100%);background:var(--bubble);border:1px solid rgba(127,216,245,.35);
+    border-radius:24px;padding:20px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
+  .quizTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  #quizScore{font-family:'Jua',sans-serif;color:var(--sun);font-size:17px}
+  #quizClose{background:rgba(234,242,255,.1);border:none;color:var(--ink);width:34px;height:34px;
+    border-radius:50%;font-size:15px;cursor:pointer}
+  .quizQ{font-family:'Jua',sans-serif;font-size:19px;line-height:1.5;margin-bottom:16px}
+  .quizOpts{display:flex;flex-direction:column;gap:10px}
+  .quizOpts button{font-family:'Gowun Dodum',sans-serif;font-size:16px;text-align:left;
+    background:var(--chip);border:1px solid rgba(127,216,245,.25);color:var(--ink);
+    border-radius:14px;padding:13px 16px;cursor:pointer;transition:transform .12s, background .2s}
+  .quizOpts button:active{transform:scale(.97)}
+  .quizOpts button.correct{background:rgba(120,230,150,.25);border-color:#7be39a;color:#eafff0}
+  .quizOpts button.wrong{background:rgba(255,120,120,.22);border-color:#ff8a8a}
+  .quizOpts button:disabled{cursor:default}
+  .quizFb{margin-top:14px;font-size:15px;line-height:1.55;color:var(--sky)}
+  .quizNext{width:100%;margin-top:16px;font-family:'Jua',sans-serif;font-size:16px;border:none;
+    border-radius:14px;padding:13px 0;background:linear-gradient(135deg,#ffd166,#ff9e54);color:#2a1b00;cursor:pointer}
 </style>
 </head>
 <body>
@@ -140,11 +181,14 @@
 <header>
   <h1>🪐 우주 <span>탐험</span></h1>
   <div class="spacer"></div>
-  <button class="mode" id="modeBtn">✨ 이웃 별 보러 가기</button>
+  <button class="mode" id="modeBtn">✨ 이웃 별</button>
+  <button class="snd" id="quizBtn" title="퀴즈">🎯</button>
   <button class="snd" id="sndBtn" title="소리 켜기/끄기">🔊</button>
 </header>
 
-<div id="hint">행성을 꾹 눌러 보세요!</div>
+<div id="hint">행성을 톡 눌러 보세요!</div>
+<div id="labels"></div>
+<button class="fab" id="homeFab" title="처음 위치로">🏠</button>
 
 <div id="card">
   <div class="name"><span id="cName"></span><em id="cTag"></em></div>
@@ -169,6 +213,16 @@
 </div>
 
 <nav id="nav"></nav>
+
+<div id="quiz" class="quizWrap" hidden>
+  <div class="quizBox">
+    <div class="quizTop"><span id="quizScore">⭐ 0</span><button id="quizClose" title="닫기">✕</button></div>
+    <div class="quizQ" id="quizQ"></div>
+    <div class="quizOpts" id="quizOpts"></div>
+    <div class="quizFb" id="quizFb"></div>
+    <button class="quizNext" id="quizNext" hidden>다음 문제 →</button>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -238,7 +292,19 @@ const PLANETS = [
    details:'해왕성은 태양에서 가장 먼 행성이에요. 깊고 푸른색을 띠고, 태양계에서 바람이 가장 세게 부는 곳이에요. 최고 시속 2,100km나 돼요! 햇빛이 너무 약해서 어둑하게 닿아요. 일 년이 165년이라 발견 뒤 한 바퀴 도는 데도 시간이 한참 걸려요.',
    funFacts:['바람 속도가 음속을 넘어요! 시속 2,100km','1846년 수학 계산으로 위치를 먼저 예측해서 발견했어요','가장 큰 위성 트리톤은 반대 방향으로 돌아요','1989년 보이저 2호가 유일하게 방문한 우주선이에요'],
    stats:{'지름':'49,244 km','태양까지':'45억 km','하루':'16시간','일 년':'165년','위성':'14개'},
-   cutaway:[{label:'암석 핵', color:'#3a4870', r:0.2},{label:'얼음 맨틀', color:'#5a7bb0', r:0.7},{label:'수소·메탄', color:'#5a7bf0', r:1.0}]}
+   cutaway:[{label:'암석 핵', color:'#3a4870', r:0.2},{label:'얼음 맨틀', color:'#5a7bb0', r:0.7},{label:'수소·메탄', color:'#5a7bf0', r:1.0}]},
+  {id:'ceres', name:'세레스', tag:'왜소행성', emoji:'⚪', color:0xa89a86, size:0.34, dist:24, speed:0.5, isDwarf:true,
+   fact:'화성과 목성 사이 소행성대에서 가장 큰 친구예요. 너무 작아서 행성 대신 왜소행성이라고 불러요. 얼음이 많이 숨어 있대요!',
+   details:'세레스는 소행성대에서 가장 큰 천체이자 가장 가까운 왜소행성이에요. 1801년 처음 발견됐을 때는 행성으로 여겨졌답니다. 표면 아래에 많은 양의 얼음이 숨어 있을 것으로 보여요. 2015년 던 탐사선이 가까이에서 살펴봤어요.',
+   funFacts:['소행성대에서 가장 큰 천체예요','지름이 약 940km예요','표면에 소금 성분으로 밝게 빛나는 점이 있어요','던(Dawn) 탐사선이 탐사했어요'],
+   stats:{'지름':'940 km','태양까지':'4억 1천만 km','일 년':'4.6년','종류':'왜소행성'},
+   cutaway:[{label:'암석 핵', color:'#6e5d4a', r:0.5},{label:'얼음 맨틀', color:'#aebfc9', r:0.9},{label:'지각', color:'#a89a86', r:1.0}]},
+  {id:'pluto', name:'명왕성', tag:'머나먼 왜소행성', emoji:'🤍', color:0xd8c3a5, size:0.45, dist:50, speed:0.16, isDwarf:true,
+   fact:'아주아주 먼 곳에 있는 작은 얼음 세계예요. 예전엔 아홉 번째 행성이었지만, 너무 작아서 지금은 왜소행성이 됐어요. 표면에 하트 무늬가 있답니다!',
+   details:'명왕성은 해왕성 너머 카이퍼 벨트에 있는 왜소행성이에요. 2006년부터 행성이 아닌 왜소행성으로 분류됐어요. 표면에는 커다란 하트 모양 얼음 평원이 있어서 유명하지요. 가장 큰 위성 카론은 명왕성의 절반만큼이나 커서 서로 마주 보며 돈답니다.',
+   funFacts:['표면에 하트 모양 얼음 평원이 있어요','우리 달보다도 작아요','일 년이 무려 248년이에요','2015년 뉴호라이즌스 탐사선이 처음 찾아갔어요','위성 카론과 서로 마주 보며 돌아요'],
+   stats:{'지름':'2,377 km','태양까지':'59억 km','하루':'6.4일','일 년':'248년','위성':'5개'},
+   cutaway:[{label:'암석 핵', color:'#8b7355', r:0.6},{label:'얼음 맨틀', color:'#c9d4dc', r:0.9},{label:'질소 얼음', color:'#d8c3a5', r:1.0}]}
 ];
 
 const STARS = [
@@ -337,28 +403,31 @@ function makePlanetMesh(p){
   const mat = p.id==='sun'
     ? new THREE.MeshBasicMaterial({color:p.color})
     : new THREE.MeshStandardMaterial({color:p.color, roughness:.85, metalness:.05});
-  const m = new THREE.Mesh(new THREE.SphereGeometry(p.size, 40, 40), mat);
-  m.userData = p;
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(p.size, 40, 40), mat);
+  sphere.userData = p;
   if(p.id==='sun'){
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(0xffd166), transparent:true, opacity:.85, depthWrite:false}));
-    glow.scale.setScalar(p.size*5.2); m.add(glow);
+    glow.scale.setScalar(p.size*5.2); sphere.add(glow);
   }
-  if(p.ring){
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(p.size*1.45, p.size*2.25, 64),
-      new THREE.MeshBasicMaterial({color:0xd9c79a, side:THREE.DoubleSide, transparent:true, opacity:.65}));
-    ring.rotation.x = Math.PI/2.25;
-    m.add(ring);
-  }
-  return m;
+  if(!p.ring) return {node:sphere, spin:sphere};
+  // 고리 행성: 고리가 자전에 휩쓸려 흔들리지 않도록, 구만 자전시키고 고리는 고정한다.
+  const group = new THREE.Group();
+  group.userData = p;
+  group.add(sphere);
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(p.size*1.45, p.size*2.25, 64),
+    new THREE.MeshBasicMaterial({color:0xd9c79a, side:THREE.DoubleSide, transparent:true, opacity:.65}));
+  ring.rotation.x = Math.PI/2.25;
+  group.add(ring);
+  return {node:group, spin:sphere};
 }
 
-const bodies = {}; // id → {mesh, p, angle}
+const bodies = {}; // id → {mesh, p, angle, spin}
 PLANETS.forEach(p=>{
   if(p.isMoon) return;
-  const mesh = makePlanetMesh(p);
-  solarGroup.add(mesh);
-  bodies[p.id] = {mesh, p, angle:Math.random()*Math.PI*2};
+  const {node, spin} = makePlanetMesh(p);
+  solarGroup.add(node);
+  bodies[p.id] = {mesh:node, p, angle:Math.random()*Math.PI*2, spin};
   if(p.dist>0){
     const orbit = new THREE.Mesh(
       new THREE.RingGeometry(p.dist-0.035, p.dist+0.035, 128),
@@ -369,9 +438,26 @@ PLANETS.forEach(p=>{
 });
 // 달
 const moonData = PLANETS.find(p=>p.id==='moon');
-const moonMesh = makePlanetMesh(moonData);
-solarGroup.add(moonMesh);
-bodies.moon = {mesh:moonMesh, p:moonData, angle:0};
+const moon = makePlanetMesh(moonData);
+solarGroup.add(moon.node);
+bodies.moon = {mesh:moon.node, p:moonData, angle:0, spin:moon.spin};
+
+// ── 소행성대 (화성 ↔ 목성 사이) ──────────────
+let asteroidBelt;
+(function makeBelt(){
+  const N = 1100, pos = new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = 21.5 + Math.random()*4.5;
+    pos[i*3]   = Math.cos(a)*r;
+    pos[i*3+1] = (Math.random()-0.5)*0.9;
+    pos[i*3+2] = Math.sin(a)*r;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  asteroidBelt = new THREE.Points(g, new THREE.PointsMaterial({color:0xa89a86, size:0.16, sizeAttenuation:true, transparent:true, opacity:.85}));
+  solarGroup.add(asteroidBelt);
+})();
 
 // ── 이웃 별 그룹 ─────────────────────────────
 const starGroup = new THREE.Group();
@@ -388,6 +474,14 @@ STARS.forEach(s=>{
   starGroup.add(m);
   starBodies[s.id] = {mesh:m, p:s};
 });
+// 알파 센타우리와 프록시마는 실제로 한 삼중성계 — 둘을 잇는 안내선 (천문학적으로 올바른 연결)
+(function linkCentauri(){
+  const a = STARS.find(s=>s.id==='alpha'), p = STARS.find(s=>s.id==='proxima');
+  if(!a || !p) return;
+  const g = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(...a.pos), new THREE.Vector3(...p.pos)]);
+  starGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({color:0x7fd8f5, transparent:true, opacity:.22})));
+})();
 
 // ── 카메라 컨트롤 (직접 구현: 드래그 회전 + 핀치/휠 줌) ──
 const ctrl = {
@@ -430,7 +524,8 @@ canvas.addEventListener('pointermove', e=>{
     dragDist += Math.abs(dx)+Math.abs(dy);
     ctrl.theta += dx*0.005;
     ctrl.phi   -= dy*0.005;
-    ctrl.followMesh = null; // 사용자가 움직이면 따라가기 해제
+    // 회전해도 선택한 천체는 계속 중심에 두고 둘러볼 수 있게 추적을 유지한다.
+    // (자유 시점으로 돌아가려면 '닫기' 또는 '처음 위치' 버튼)
   } else if(pointers.size===2){
     const [a,b]=[...pointers.values()];
     const d = Math.hypot(a.x-b.x, a.y-b.y);
@@ -513,6 +608,7 @@ function showCard(p){
 
   card.classList.add('show');
   card.scrollTop = 0;
+  homeFab.style.display = 'none';
   speak(`${p.name}. ${p.fact}`);
 }
 
@@ -530,6 +626,7 @@ function renderCutaway(layers){
 }
 document.getElementById('closeBtn').onclick = ()=>{
   card.classList.remove('show');
+  homeFab.style.display = 'grid';
   stopSpeak();
   selectedId = null; ctrl.followMesh = null;
   highlightPill(null);
@@ -632,16 +729,88 @@ sndBtn.onclick = ()=>{
   if(!soundOn) stopSpeak();
 };
 
+// ── 처음 위치로 (시점 리셋) ───────────────────
+const homeFab = document.getElementById('homeFab');
+homeFab.onclick = ()=>{
+  card.classList.remove('show');
+  stopSpeak();
+  selectedId = null; ctrl.followMesh = null;
+  highlightPill(null);
+  ctrl.theta = 0.9; ctrl.phi = 1.15;
+  ctrl.tTarget.set(0,0,0);
+  ctrl.tRadius = mode==='solar' ? 70 : 55;
+  updateCameraProjection();
+};
+
+// ── 퀴즈 ─────────────────────────────────────
+const QUIZ = [
+  {q:'태양계에서 가장 큰 행성은 무엇일까요?', a:'목성', opts:['목성','지구','화성'], why:'목성은 지구가 1,300개나 들어갈 만큼 커요!'},
+  {q:'우리가 살고 있는 행성은 무엇일까요?', a:'지구', opts:['지구','금성','토성'], why:'지구는 물과 공기가 있어 생명체가 살 수 있어요.'},
+  {q:'멋진 고리를 두르고 있는 행성은?', a:'토성', opts:['토성','수성','화성'], why:'토성의 고리는 얼음과 돌 조각으로 이뤄져 있어요.'},
+  {q:'붉은 모래로 덮여 "빨간 행성"이라 불리는 곳은?', a:'화성', opts:['화성','천왕성','금성'], why:'화성은 산화철(녹) 때문에 붉게 보여요.'},
+  {q:'태양계에서 가장 뜨거운 행성은?', a:'금성', opts:['금성','수성','목성'], why:'두꺼운 구름이 열을 가둬 표면이 약 470도나 돼요.'},
+  {q:'태양과 가장 가까운 행성은?', a:'수성', opts:['수성','지구','해왕성'], why:'수성은 태양과 가장 가까운, 가장 작은 행성이에요.'},
+  {q:'옆으로 누워서 빙글빙글 도는 행성은?', a:'천왕성', opts:['천왕성','토성','지구'], why:'천왕성은 자전축이 98도나 기울어져 있어요.'},
+  {q:'밤하늘에서 가장 밝게 빛나는 별은?', a:'시리우스', opts:['시리우스','북극성','베가'], why:'시리우스는 큰개자리의 가장 밝은 별이에요.'},
+  {q:'지구의 단짝 친구로, 밤하늘에 뜨는 것은?', a:'달', opts:['달','태양','화성'], why:'달은 지구의 유일한 자연 위성이에요.'},
+  {q:'태양에서 가장 멀리 있는 행성은?', a:'해왕성', opts:['해왕성','목성','화성'], why:'해왕성은 가장 먼 행성이고 바람이 가장 세요.'},
+  {q:'예전엔 행성이었지만 지금은 "왜소행성"이 된 것은?', a:'명왕성', opts:['명왕성','수성','달'], why:'명왕성은 2006년부터 왜소행성으로 분류됐어요.'},
+];
+const quizEl = document.getElementById('quiz');
+const quizQEl = document.getElementById('quizQ');
+const quizOptsEl = document.getElementById('quizOpts');
+const quizFbEl = document.getElementById('quizFb');
+const quizNextEl = document.getElementById('quizNext');
+const quizScoreEl = document.getElementById('quizScore');
+let quizScore = 0, quizIdx = -1;
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function nextQuiz(){
+  let i; do{ i=(Math.random()*QUIZ.length)|0; } while(i===quizIdx && QUIZ.length>1);
+  quizIdx = i; const item = QUIZ[i];
+  quizQEl.textContent = item.q;
+  quizFbEl.textContent = '';
+  quizNextEl.hidden = true;
+  quizOptsEl.innerHTML = '';
+  shuffle(item.opts.slice()).forEach(o=>{
+    const b = document.createElement('button');
+    b.textContent = o;
+    b.onclick = ()=> answerQuiz(b, o, item);
+    quizOptsEl.appendChild(b);
+  });
+  speak(item.q);
+}
+function answerQuiz(btn, choice, item){
+  [...quizOptsEl.children].forEach(b=>{ b.disabled = true; if(b.textContent===item.a) b.classList.add('correct'); });
+  if(choice===item.a){
+    quizScore++; quizScoreEl.textContent = '⭐ ' + quizScore;
+    quizFbEl.textContent = '🎉 정답이에요! ' + item.why;
+    speak('정답이에요! ' + item.why);
+  } else {
+    btn.classList.add('wrong');
+    quizFbEl.textContent = '아쉬워요. 정답은 "' + item.a + '"이에요. ' + item.why;
+    speak('아쉬워요. 정답은 ' + item.a + '. ' + item.why);
+  }
+  quizNextEl.hidden = false;
+}
+document.getElementById('quizBtn').onclick = ()=>{
+  quizEl.hidden = false;
+  quizScore = 0; quizScoreEl.textContent = '⭐ 0';
+  nextQuiz();
+};
+document.getElementById('quizClose').onclick = ()=>{ quizEl.hidden = true; stopSpeak(); };
+quizNextEl.onclick = nextQuiz;
+
 // ── 모드 전환 (태양계 ↔ 이웃 별) ──────────────
 const modeBtn = document.getElementById('modeBtn');
 modeBtn.onclick = ()=>{
   mode = mode==='solar' ? 'stars' : 'solar';
   solarGroup.visible = mode==='solar';
   starGroup.visible  = mode==='stars';
-  modeBtn.textContent = mode==='solar' ? '✨ 이웃 별 보러 가기' : '🪐 태양계로 돌아가기';
-  hint.textContent = mode==='solar' ? '행성을 꾹 눌러 보세요!' : '반짝이는 별을 눌러 보세요!';
+  modeBtn.textContent = mode==='solar' ? '✨ 이웃 별' : '🪐 태양계';
+  hint.textContent = mode==='solar' ? '행성을 톡 눌러 보세요!' : '반짝이는 별을 눌러 보세요!';
   hint.classList.remove('hide');
   card.classList.remove('show');
+  homeFab.style.display = 'grid';
   stopSpeak();
   selectedId = null; ctrl.followMesh = null;
   ctrl.tTarget.set(0,0,0);
@@ -649,8 +818,9 @@ modeBtn.onclick = ()=>{
   updateCameraProjection();
   rebuildPickables();
   buildNav();
+  buildLabels();
   if(mode==='stars') speak('우와! 태양계 밖으로 나왔어요. 태양이 작아졌지요? 반짝이는 건 모두 이웃 별들이에요.');
-  else speak('태양계로 돌아왔어요! 행성을 꾹 눌러 보세요.');
+  else speak('태양계로 돌아왔어요! 행성을 톡 눌러 보세요.');
 };
 function rebuildPickables(){
   pickables.length = 0;
@@ -679,6 +849,45 @@ function highlightPill(id){
   if(on) on.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
 }
 buildNav();
+
+// ── 천체 이름 라벨 ────────────────────────────
+const labelsEl = document.getElementById('labels');
+const labelMap = {}; // id → element
+function buildLabels(){
+  labelsEl.innerHTML = '';
+  for(const k in labelMap) delete labelMap[k];
+  const list = mode==='solar' ? PLANETS : STARS;
+  list.forEach(p=>{
+    const el = document.createElement('button');
+    el.className = 'lbl'; el.textContent = p.name;
+    el.onclick = e=>{ e.stopPropagation(); select(p.id); };
+    labelsEl.appendChild(el);
+    labelMap[p.id] = el;
+  });
+}
+const _lv = new THREE.Vector3();
+const _lastCam = new THREE.Vector3();
+function updateLabels(){
+  // 카메라가 움직이는 동안(드래그·확대·트윈)에는 라벨을 숨겨 캔버스와의 어긋남을 없앤다.
+  const moved = camera.position.distanceTo(_lastCam);
+  _lastCam.copy(camera.position);
+  labelsEl.classList.toggle('moving', pointers.size>0 || moved>0.08);
+  const pool = mode==='solar' ? bodies : starBodies;
+  const w = canvas.clientWidth || innerWidth;
+  const h = canvas.clientHeight || innerHeight;
+  for(const id in labelMap){
+    const b = pool[id], el = labelMap[id];
+    if(!b){ el.style.display='none'; continue; }
+    b.mesh.getWorldPosition(_lv);
+    _lv.project(camera);
+    if(_lv.z > 1){ el.style.display='none'; continue; } // 카메라 뒤
+    el.style.display = '';
+    const x = (_lv.x*0.5+0.5)*w, y = (-_lv.y*0.5+0.5)*h;
+    el.style.transform = `translate(${x}px,${y}px) translate(-50%,-150%)`;
+    el.classList.toggle('dim', id===selectedId); // 선택된 건 카드에 이름이 있으니 숨김
+  }
+}
+buildLabels();
 
 // ── 애니메이션 루프 ──────────────────────────
 const clock = new THREE.Clock();
@@ -722,7 +931,7 @@ function tick(){
     const p = b.p;
     if(p.isMoon) b.angle += dt*0.45;   // 너무 빠르면 따라갈 때 어지러워요 (이전 2.2)
     else if(p.dist>0) b.angle += dt*p.speed*0.12;
-    b.mesh.rotation.y += dt*0.4;
+    b.spin.rotation.y += dt*0.4;
     if(p.isMoon){
       const e = bodies.earth.mesh.position;
       b.mesh.position.set(e.x + Math.cos(b.angle)*2.1, e.y, e.z + Math.sin(b.angle)*2.1);
@@ -734,6 +943,7 @@ function tick(){
     const glow = b.mesh.children[0];
     if(glow) glow.material.opacity = 0.75 + Math.sin(t*2 + i*1.7)*0.18;
   });
+  if(asteroidBelt) asteroidBelt.rotation.y += dt*0.03;
 
   // 선택한 천체 따라가기 + 부드러운 트윈
   if(ctrl.followMesh){
@@ -744,6 +954,7 @@ function tick(){
   ctrl.radius += (ctrl.tRadius - ctrl.radius) * (1 - Math.pow(0.002, dt));
 
   applyCamera();
+  updateLabels();
   renderer.render(scene, camera);
 }
 tick();
