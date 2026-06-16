@@ -55,7 +55,8 @@
 
   /* ── 정보 말풍선 ───────────────────── */
   #card{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(86px + env(safe-area-inset-bottom));
-    z-index:10;width:min(560px,calc(100% - 24px));background:var(--bubble);border:1px solid rgba(127,216,245,.32);
+    z-index:10;width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 180px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:var(--bubble);border:1px solid rgba(127,216,245,.32);
     border-radius:22px;padding:16px 18px 14px;backdrop-filter:blur(12px);
     box-shadow:0 8px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .35s, transform .35s}
   #card.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
@@ -71,6 +72,28 @@
   #speakBtn.speaking{animation:pulse 1s ease-in-out infinite}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,209,102,.55)}50%{box-shadow:0 0 0 9px rgba(255,209,102,0)}}
   #closeBtn{background:rgba(234,242,255,.1);color:var(--ink);flex:0 0 64px}
+
+  /* ── 더 알아보기 (확장 카드) ───────────────── */
+  #card #moreBtn{flex:none;width:100%;margin-top:12px;background:rgba(127,216,245,.14);color:var(--sky);
+    border:1px solid rgba(127,216,245,.32);font-size:14px;padding:11px 0;border-radius:14px}
+  .more{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(127,216,245,.22);
+    display:flex;flex-direction:column;gap:16px}
+  .moreText{font-size:15px;line-height:1.65;color:var(--ink)}
+  .moreSection h3{font-family:'Jua',sans-serif;font-size:15px;color:var(--sky);margin-bottom:8px;font-weight:400}
+  .moreSection ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px}
+  .moreSection li{font-size:14px;line-height:1.55;padding-left:22px;position:relative}
+  .moreSection li::before{content:'✦';position:absolute;left:4px;color:var(--sun);font-size:12px}
+  .moreSection dl{display:grid;grid-template-columns:max-content 1fr;gap:7px 14px;margin:0;font-size:14px}
+  .moreSection dt{color:var(--sky);font-family:'Jua',sans-serif;font-weight:400}
+  .moreSection dd{margin:0;color:var(--ink)}
+  .cutaway{display:flex;gap:14px;align-items:center;background:rgba(127,216,245,.06);
+    border-radius:14px;padding:14px;border:1px solid rgba(127,216,245,.12)}
+  .cutaway svg{flex:0 0 120px;width:120px;height:120px}
+  .cutaway .legend{flex:1;display:flex;flex-direction:column;gap:7px;font-size:13px}
+  .cutaway .legend > div{display:flex;align-items:center;gap:8px}
+  .cutaway .legend i{display:inline-block;width:13px;height:13px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);flex:0 0 13px}
+  .cutaway .legendTitle{font-family:'Jua',sans-serif;color:var(--sky);font-size:13px;margin-bottom:2px}
 
   /* ── 하단 행성 칩 ──────────────────── */
   nav{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;gap:8px;overflow-x:auto;
@@ -115,6 +138,19 @@
 <div id="card">
   <div class="name"><span id="cName"></span><em id="cTag"></em></div>
   <div class="fact" id="cFact"></div>
+  <button id="moreBtn" class="moreToggle">📖 더 알아보기 ↓</button>
+  <div class="more" id="cMore" hidden>
+    <div class="moreText" id="cMoreText"></div>
+    <div class="cutaway" id="cCutaway"></div>
+    <section class="moreSection">
+      <h3>✨ 알아두면 좋은 사실</h3>
+      <ul id="cFunFacts"></ul>
+    </section>
+    <section class="moreSection">
+      <h3>📊 한눈에 보는 정보</h3>
+      <dl id="cStats"></dl>
+    </section>
+  </div>
   <div class="row">
     <button id="speakBtn">🔊 다시 들려줘!</button>
     <button id="closeBtn">닫기</button>
@@ -132,45 +168,109 @@
 
 // ── 데이터 ──────────────────────────────────
 const PLANETS = [
-  {id:'sun',     name:'태양',   tag:'우리의 별',     emoji:'☀️', color:0xffd166, size:5.0, dist:0,    speed:0,
-   fact:'뜨겁게 타오르는 커다란 불덩어리 별이에요! 태양계 식구들을 모두 따뜻하게 비춰 주지요. 태양이 없으면 지구는 꽁꽁 얼어 버려요.'},
-  {id:'mercury', name:'수성',   tag:'가장 작은 행성', emoji:'🪨', color:0xb8a890, size:0.55, dist:9,  speed:1.6,
-   fact:'태양과 가장 가까운 꼬마 행성이에요. 낮에는 엄청 뜨겁고, 밤에는 엄청 추워요. 일 년이 겨우 88일이래요!'},
-  {id:'venus',   name:'금성',   tag:'샛별',          emoji:'🌕', color:0xf0c987, size:0.95, dist:12.5, speed:1.17,
-   fact:'태양계에서 가장 뜨거운 행성이에요. 두꺼운 구름 이불을 덮고 있거든요. 새벽 하늘에서 반짝이는 샛별이 바로 금성이에요!'},
-  {id:'earth',   name:'지구',   tag:'우리 집',       emoji:'🌍', color:0x4f9df7, size:1.0, dist:16,  speed:1.0,
-   fact:'우리가 사는 곳이에요! 시원한 물과 맑은 공기가 있어서 사람도, 동물도, 식물도 함께 살 수 있어요. 우주에서 보면 파란 구슬 같아요.'},
-  {id:'moon',    name:'달',     tag:'지구의 단짝',    emoji:'🌙', color:0xcfcfd6, size:0.27, dist:0, speed:0, isMoon:true,
-   fact:'지구의 단짝 친구예요! 매일 밤 지구 곁을 빙글빙글 돌아요. 어떤 날은 동그란 보름달, 어떤 날은 얇은 눈썹 같은 초승달로 보여요.'},
-  {id:'mars',    name:'화성',   tag:'빨간 행성',     emoji:'🔴', color:0xe06b4a, size:0.7, dist:20,  speed:0.8,
-   fact:'온통 붉은 모래로 덮인 빨간 행성이에요. 지금 이 순간에도 로봇 탐사차가 화성을 누비며 탐험하고 있어요. 언젠가 사람도 갈 수 있을까요?'},
-  {id:'jupiter', name:'목성',   tag:'제일 큰 형',    emoji:'🟠', color:0xd9a066, size:2.6, dist:27,  speed:0.44,
-   fact:'태양계에서 가장 큰 행성이에요! 지구가 1,300개나 들어갈 만큼 커요. 몸에 있는 커다란 빨간 점은 수백 년 동안 멈추지 않는 거대한 태풍이래요.'},
-  {id:'saturn',  name:'토성',   tag:'고리의 왕',     emoji:'💍', color:0xe8d5a3, size:2.2, dist:34,  speed:0.33, ring:true,
-   fact:'반짝이는 멋진 고리를 두른 행성이에요. 고리는 수많은 얼음과 돌 조각으로 만들어졌어요. 망원경으로 보면 정말 예뻐요!'},
-  {id:'uranus',  name:'천왕성', tag:'누워서 도는 별', emoji:'🩵', color:0x9fe3e0, size:1.5, dist:40,  speed:0.23,
-   fact:'청록색 얼음 행성이에요. 신기하게도 옆으로 누워서 빙글빙글 돌아요. 마치 데굴데굴 굴러가는 공 같지요?'},
-  {id:'neptune', name:'해왕성', tag:'가장 먼 행성',  emoji:'🔵', color:0x5a7bf0, size:1.45, dist:45, speed:0.18,
-   fact:'태양에서 가장 멀리 있는 파란 행성이에요. 태양계에서 바람이 제일 세게 부는 곳이래요. 너무 멀어서 태양 빛도 아주 약하게 닿아요.'},
+  {id:'sun', name:'태양', tag:'우리의 별', emoji:'☀️', color:0xffd166, size:5.0, dist:0, speed:0,
+   fact:'뜨겁게 타오르는 커다란 불덩어리 별이에요! 태양계 식구들을 모두 따뜻하게 비춰 주지요. 태양이 없으면 지구는 꽁꽁 얼어 버려요.',
+   details:'태양은 우리 태양계의 중심에 있는 별이에요. 거대한 가스 공이 뜨겁게 타오르며 빛과 열을 내뿜고 있답니다. 태양 빛이 지구까지 오는 데에는 약 8분이 걸려요. 지구가 130만 개나 들어갈 만큼 크고, 무게는 태양계 전체의 99.8%나 차지해요.',
+   funFacts:['표면 온도는 약 5,500도, 중심부는 무려 1,500만 도예요','수소가 헬륨으로 바뀌면서 빛과 열이 만들어져요','46억 살이고, 앞으로도 50억 년 더 빛날 수 있어요'],
+   stats:{'지름':'139만 km','종류':'노란 왜성 (G형)','표면 온도':'약 5,500°C','나이':'약 46억 살'},
+   cutaway:[{label:'핵', color:'#ffee99', r:0.25},{label:'복사층', color:'#ffd166', r:0.55},{label:'대류층', color:'#ffa552', r:0.85},{label:'광구', color:'#ff7c2e', r:1.0}]},
+  {id:'mercury', name:'수성', tag:'가장 작은 행성', emoji:'🪨', color:0xb8a890, size:0.55, dist:9, speed:1.6,
+   fact:'태양과 가장 가까운 꼬마 행성이에요. 낮에는 엄청 뜨겁고, 밤에는 엄청 추워요. 일 년이 겨우 88일이래요!',
+   details:'수성은 태양에 가장 가까이 있고 태양계에서 가장 작은 행성이에요. 달처럼 표면이 운석 구덩이로 가득해요. 대기가 거의 없어서 낮에는 +430도까지 뜨거워지고, 밤에는 영하 180도까지 차가워져요. 가장 빠르게 태양을 도는 행성이지요.',
+   funFacts:['하루(자전)는 지구 시간으로 약 59일이에요','일 년(공전)은 88일밖에 안 돼요','지구의 달과 크기가 거의 비슷해요','중력이 약해서 대기를 붙잡지 못해요'],
+   stats:{'지름':'4,879 km','태양까지':'5,800만 km','하루':'59일','일 년':'88일','위성':'없음'},
+   cutaway:[{label:'철 핵', color:'#cd853f', r:0.75},{label:'맨틀', color:'#a87752', r:0.95},{label:'지각', color:'#7a5d3e', r:1.0}]},
+  {id:'venus', name:'금성', tag:'샛별', emoji:'🌕', color:0xf0c987, size:0.95, dist:12.5, speed:1.17,
+   fact:'태양계에서 가장 뜨거운 행성이에요. 두꺼운 구름 이불을 덮고 있거든요. 새벽 하늘에서 반짝이는 샛별이 바로 금성이에요!',
+   details:'금성은 지구와 크기가 비슷해서 지구의 쌍둥이라고 불려요. 두꺼운 구름이 열을 가둬서 표면 온도가 약 470도나 돼요. 태양계에서 가장 뜨거운 행성이에요. 신기하게도 다른 행성들과 반대 방향으로 천천히 자전한답니다.',
+   funFacts:['하루가 일 년보다 길어요! 자전 243일, 공전 225일','표면 압력은 지구의 92배예요','구름이 황산으로 이뤄져 빛을 반사해 매우 밝아요','새벽과 저녁 하늘에서 가장 밝게 빛나요'],
+   stats:{'지름':'12,104 km','태양까지':'1억 800만 km','하루':'243일','일 년':'225일','위성':'없음'},
+   cutaway:[{label:'철 핵', color:'#ffb84d', r:0.5},{label:'맨틀', color:'#d49355', r:0.85},{label:'지각', color:'#a87752', r:0.93},{label:'구름', color:'#f0d68f', r:1.0}]},
+  {id:'earth', name:'지구', tag:'우리 집', emoji:'🌍', color:0x4f9df7, size:1.0, dist:16, speed:1.0,
+   fact:'우리가 사는 곳이에요! 시원한 물과 맑은 공기가 있어서 사람도, 동물도, 식물도 함께 살 수 있어요. 우주에서 보면 파란 구슬 같아요.',
+   details:'지구는 생명체가 살고 있다고 알려진 유일한 행성이에요. 표면의 70퍼센트가 물로 덮여 있고, 산소가 있는 공기가 우리를 보호해 줘요. 자기장이 우주 방사선을 막아 주고, 적당한 거리에서 태양 빛을 받아 따뜻해요. 24시간마다 한 번 자전하면서 낮과 밤을 만든답니다.',
+   funFacts:['지구의 4분의 3은 바다예요','적도에서 자전 속도가 시속 1,670km나 돼요','약 46억 살이에요','자기장이 있어서 나침반이 작동해요','달이 바닷물을 끌어당겨 밀물과 썰물이 생겨요'],
+   stats:{'지름':'12,742 km','태양까지':'1억 5천만 km','하루':'24시간','일 년':'365일','위성':'1개 (달)'},
+   cutaway:[{label:'내핵', color:'#ffec80', r:0.2},{label:'외핵', color:'#ff8c42', r:0.55},{label:'맨틀', color:'#c4673b', r:0.93},{label:'지각', color:'#4f9df7', r:1.0}]},
+  {id:'moon', name:'달', tag:'지구의 단짝', emoji:'🌙', color:0xcfcfd6, size:0.27, dist:0, speed:0, isMoon:true,
+   fact:'지구의 단짝 친구예요! 매일 밤 지구 곁을 빙글빙글 돌아요. 어떤 날은 동그란 보름달, 어떤 날은 얇은 눈썹 같은 초승달로 보여요.',
+   details:'달은 지구의 유일한 자연 위성이에요. 약 38만 km 떨어져 있고, 27일에 한 번 지구를 돌아요. 신기하게도 같은 면이 늘 지구를 향해요. 달의 중력 덕분에 바닷물에 밀물과 썰물이 생겨요.',
+   funFacts:['1969년 인간이 처음 발을 디뎠어요 (아폴로 11호)','중력이 지구의 6분의 1이에요. 점프하면 더 높이 뛸 수 있어요!','표면은 운석 구덩이로 가득해요','대기가 거의 없어서 하늘이 까매요'],
+   stats:{'지름':'3,474 km','지구까지':'38만 km','공전 주기':'27일','표면 중력':'지구의 1/6'},
+   cutaway:[{label:'핵', color:'#b8860b', r:0.4},{label:'맨틀', color:'#999999', r:0.9},{label:'지각', color:'#cfcfd6', r:1.0}]},
+  {id:'mars', name:'화성', tag:'빨간 행성', emoji:'🔴', color:0xe06b4a, size:0.7, dist:20, speed:0.8,
+   fact:'온통 붉은 모래로 덮인 빨간 행성이에요. 지금 이 순간에도 로봇 탐사차가 화성을 누비며 탐험하고 있어요. 언젠가 사람도 갈 수 있을까요?',
+   details:'화성은 표면이 산화철, 즉 녹으로 덮여 붉은빛을 띠어요. 태양계에서 가장 큰 화산 올림푸스 산과 가장 깊은 협곡 마리네리스 협곡이 있어요. 옛날에는 물이 흘렀던 흔적이 있어서 생명체 가능성을 탐구하고 있답니다.',
+   funFacts:['올림푸스 산은 높이 22km! 에베레스트의 2.5배예요','화성의 하루는 24시간 37분으로 지구와 비슷해요','위성이 2개 있어요 — 포보스와 데이모스','큐리오시티, 퍼서비어런스 같은 로봇이 탐사 중이에요'],
+   stats:{'지름':'6,779 km','태양까지':'2억 3천만 km','하루':'24.6시간','일 년':'687일','위성':'2개'},
+   cutaway:[{label:'철 핵', color:'#ffa552', r:0.5},{label:'맨틀', color:'#c87547', r:0.9},{label:'지각', color:'#e06b4a', r:1.0}]},
+  {id:'jupiter', name:'목성', tag:'제일 큰 형', emoji:'🟠', color:0xd9a066, size:2.6, dist:27, speed:0.44,
+   fact:'태양계에서 가장 큰 행성이에요! 지구가 1,300개나 들어갈 만큼 커요. 몸에 있는 커다란 빨간 점은 수백 년 동안 멈추지 않는 거대한 태풍이래요.',
+   details:'목성은 태양계에서 가장 큰 행성이에요. 가스로 되어 있어서 단단한 표면이 없어요. 표면의 대적반(빨간 점)은 350년 넘게 사라지지 않은 거대한 폭풍이에요. 자기장이 태양계에서 가장 강해서 강한 방사선 띠를 만들어요.',
+   funFacts:['위성이 95개 이상이에요! 가니메데는 수성보다도 커요','자전이 가장 빨라요. 하루가 9시간 56분이에요','희미한 고리도 가지고 있어요','대적반 폭풍에 지구가 통째로 들어가요'],
+   stats:{'지름':'139,820 km','태양까지':'7억 8천만 km','하루':'10시간','일 년':'12년','위성':'95개+'},
+   cutaway:[{label:'암석 핵', color:'#8b6f47', r:0.2},{label:'금속 수소', color:'#a87752', r:0.5},{label:'액체 수소', color:'#d9a066', r:0.85},{label:'가스층', color:'#e8c47e', r:1.0}]},
+  {id:'saturn', name:'토성', tag:'고리의 왕', emoji:'💍', color:0xe8d5a3, size:2.2, dist:34, speed:0.33, ring:true,
+   fact:'반짝이는 멋진 고리를 두른 행성이에요. 고리는 수많은 얼음과 돌 조각으로 만들어졌어요. 망원경으로 보면 정말 예뻐요!',
+   details:'토성은 멋진 고리를 두른 가스 행성이에요. 고리는 얼음과 돌 조각 수십억 개로 이뤄져 있고, 너비는 30만 km나 되지만 두께는 겨우 10m밖에 안 돼요. 평균 밀도가 물보다 낮아서 토성을 통째로 띄울 큰 바다가 있다면 둥둥 떠다닐 수 있어요.',
+   funFacts:['고리는 7개의 큰 구역으로 나뉘어요','위성이 146개 이상! 타이탄에는 액체 호수가 있어요','북극에 육각형 모양의 신기한 폭풍이 있어요','카시니 탐사선이 13년간 토성을 연구했어요'],
+   stats:{'지름':'116,460 km','태양까지':'14억 km','하루':'10.5시간','일 년':'29년','위성':'146개+'},
+   cutaway:[{label:'암석 핵', color:'#8b6f47', r:0.2},{label:'금속 수소', color:'#a87752', r:0.5},{label:'액체 수소', color:'#d9a066', r:0.85},{label:'가스층', color:'#e8d5a3', r:1.0}]},
+  {id:'uranus', name:'천왕성', tag:'누워서 도는 별', emoji:'🩵', color:0x9fe3e0, size:1.5, dist:40, speed:0.23,
+   fact:'청록색 얼음 행성이에요. 신기하게도 옆으로 누워서 빙글빙글 돌아요. 마치 데굴데굴 굴러가는 공 같지요?',
+   details:'천왕성은 자전축이 98도나 기울어져 있어서 옆으로 누워서 도는 신기한 얼음 행성이에요. 메탄 가스가 푸른빛을 만들어 청록색으로 보여요. 평균 기온이 영하 224도로 태양계에서 가장 추워요. 27개의 위성과 희미한 고리를 가지고 있어요.',
+   funFacts:['옆으로 누워서 도는 유일한 행성이에요','표면 온도가 영하 224도까지 내려가요. 가장 추운 행성!','위성 이름은 셰익스피어 작품에서 따왔어요','1781년 윌리엄 허셜이 망원경으로 발견했어요'],
+   stats:{'지름':'50,724 km','태양까지':'29억 km','하루':'17시간','일 년':'84년','위성':'27개'},
+   cutaway:[{label:'암석 핵', color:'#5e6b8e', r:0.2},{label:'얼음 맨틀', color:'#88a8c8', r:0.7},{label:'수소·메탄', color:'#9fe3e0', r:1.0}]},
+  {id:'neptune', name:'해왕성', tag:'가장 먼 행성', emoji:'🔵', color:0x5a7bf0, size:1.45, dist:45, speed:0.18,
+   fact:'태양에서 가장 멀리 있는 파란 행성이에요. 태양계에서 바람이 제일 세게 부는 곳이래요. 너무 멀어서 태양 빛도 아주 약하게 닿아요.',
+   details:'해왕성은 태양에서 가장 먼 행성이에요. 깊고 푸른색을 띠고, 태양계에서 바람이 가장 세게 부는 곳이에요. 최고 시속 2,100km나 돼요! 햇빛이 너무 약해서 어둑하게 닿아요. 일 년이 165년이라 발견 뒤 한 바퀴 도는 데도 시간이 한참 걸려요.',
+   funFacts:['바람 속도가 음속을 넘어요! 시속 2,100km','1846년 수학 계산으로 위치를 먼저 예측해서 발견했어요','가장 큰 위성 트리톤은 반대 방향으로 돌아요','1989년 보이저 2호가 유일하게 방문한 우주선이에요'],
+   stats:{'지름':'49,244 km','태양까지':'45억 km','하루':'16시간','일 년':'165년','위성':'14개'},
+   cutaway:[{label:'암석 핵', color:'#3a4870', r:0.2},{label:'얼음 맨틀', color:'#5a7bb0', r:0.7},{label:'수소·메탄', color:'#5a7bf0', r:1.0}]}
 ];
 
 const STARS = [
-  {id:'sol',      name:'태양',           tag:'우리가 출발한 곳', color:0xffd166, size:1.6, pos:[0,0,0],
-   fact:'여기서 보면 태양도 작은 별처럼 보여요. 반짝이는 것들은 모두 태양처럼 멀리 있는 별이에요. 우주는 정말 넓지요!'},
-  {id:'proxima',  name:'프록시마 센타우리', tag:'가장 가까운 이웃', color:0xff7b5c, size:1.0, pos:[16,-3,6],
-   fact:'태양에서 가장 가까운 이웃 별이에요. 그래도 빛의 빠르기로 4년이 넘게 걸려요. 작고 붉게 빛나는 별이랍니다.'},
-  {id:'alpha',    name:'알파 센타우리',    tag:'쌍둥이 별',       color:0xfff3c9, size:1.5, pos:[20,2,2],
-   fact:'두 개의 별이 서로 손을 잡고 빙글빙글 도는 쌍둥이 별이에요. 밤하늘 남쪽에서 아주 밝게 빛나요.'},
-  {id:'barnard',  name:'바너드별',        tag:'조용한 빨간 별',   color:0xff8866, size:0.85, pos:[-14,4,-8],
-   fact:'작고 조용한 빨간 별이에요. 별들 중에서 하늘을 가장 빨리 움직이는 별로 유명해요. 아주 오래오래 사는 별이래요.'},
-  {id:'sirius',   name:'시리우스',        tag:'밤하늘 최고 스타', color:0xcfe8ff, size:2.0, pos:[-26,-6,14],
-   fact:'밤하늘에서 가장 밝게 빛나는 별이에요! 겨울밤에 남쪽 하늘을 보면 보석처럼 반짝여요. 태양보다 두 배나 무거운 하얀 별이에요.'},
-  {id:'vega',     name:'직녀별 (베가)',    tag:'여름의 보석',     color:0xd8e6ff, size:1.7, pos:[10,14,-22],
-   fact:'여름밤 머리 위에서 반짝이는 밝은 별이에요. 견우와 직녀 이야기에 나오는 바로 그 직녀별이랍니다!'},
-  {id:'betel',    name:'베텔게우스',       tag:'붉은 거인',       color:0xff5e3a, size:2.6, pos:[-12,10,-30],
-   fact:'태양보다 700배나 큰 어마어마한 붉은 거인 별이에요. 나이가 많아서 언젠가 펑! 하고 멋진 불꽃놀이처럼 폭발할 거래요.'},
-  {id:'polaris',  name:'북극성',          tag:'길잡이 별',       color:0xfff8e0, size:1.5, pos:[4,24,-12],
-   fact:'언제나 북쪽 하늘 한자리에서 빛나는 길잡이 별이에요. 옛날 사람들은 이 별을 보고 길을 찾았답니다.'},
+  {id:'sol', name:'태양', tag:'우리가 출발한 곳', color:0xffd166, size:1.6, pos:[0,0,0],
+   fact:'여기서 보면 태양도 작은 별처럼 보여요. 반짝이는 것들은 모두 태양처럼 멀리 있는 별이에요. 우주는 정말 넓지요!',
+   details:'태양도 다른 별들과 마찬가지로 거대한 별이에요. 우주에서 멀리 떨어져 보면 작은 점으로 보일 뿐이지요. 우리 은하에는 약 2,000억 개의 별이 모여 있고, 그런 은하가 우주에 수천억 개나 있답니다.',
+   funFacts:['우리 은하의 별 개수는 약 1천억에서 4천억 개로 추정해요','태양은 평균적인 크기의 별이에요','우리 은하만 가로지르려면 빛으로도 10만 년 걸려요'],
+   stats:{'종류':'노란 왜성 (G형)','지름':'139만 km','지구까지':'1.5억 km'}},
+  {id:'proxima', name:'프록시마 센타우리', tag:'가장 가까운 이웃', color:0xff7b5c, size:1.0, pos:[16,-3,6],
+   fact:'태양에서 가장 가까운 이웃 별이에요. 그래도 빛의 빠르기로 4년이 넘게 걸려요. 작고 붉게 빛나는 별이랍니다.',
+   details:'프록시마 센타우리는 태양에서 가장 가까운 별이에요. 그래도 빛의 속도로 4.24년이 걸리는 어마어마한 거리예요. 작고 어두운 적색 왜성이라 맨눈으로는 보이지 않아요. 지구와 비슷한 크기의 행성이 발견되어 화제가 됐답니다.',
+   funFacts:['빛으로 4.24년, 약 40조 km 떨어져 있어요','적색 왜성이라 태양보다 훨씬 작고 어두워요','지구와 비슷한 크기의 행성이 발견됐어요 (프록시마 b)','수조 년을 살 수 있는 오래가는 별이에요'],
+   stats:{'종류':'적색 왜성 (M형)','거리':'약 4.24광년','맨눈으로':'안 보임'}},
+  {id:'alpha', name:'알파 센타우리', tag:'쌍둥이 별', color:0xfff3c9, size:1.5, pos:[20,2,2],
+   fact:'두 개의 별이 서로 손을 잡고 빙글빙글 도는 쌍둥이 별이에요. 밤하늘 남쪽에서 아주 밝게 빛나요.',
+   details:'알파 센타우리는 두 별이 서로 돌고 있는 쌍성계예요. 우리 태양과 가장 비슷한 별 알파 센타우리 A와 B, 그리고 작은 프록시마까지 셋이 함께 묶여 있어요. 남쪽 밤하늘에서 세 번째로 밝게 빛나요.',
+   funFacts:['세 별이 묶여 있는 삼중성이에요','북반구에서는 거의 안 보여요','약 4.37광년 떨어져 있어요','SF 작품에 자주 등장하는 별이에요'],
+   stats:{'종류':'삼중성','거리':'약 4.37광년','밝기 순위':'밤하늘 3위'}},
+  {id:'barnard', name:'바너드별', tag:'조용한 빨간 별', color:0xff8866, size:0.85, pos:[-14,4,-8],
+   fact:'작고 조용한 빨간 별이에요. 별들 중에서 하늘을 가장 빨리 움직이는 별로 유명해요. 아주 오래오래 사는 별이래요.',
+   details:'바너드별은 태양 다음으로 가까운 별 중 하나로 약 5.96광년 떨어져 있어요. 밤하늘에서 가장 빠르게 움직이는 별로 유명해요. 작고 어두운 적색 왜성이라 망원경 없이는 못 봐요. 행성도 발견되었답니다.',
+   funFacts:['연간 10초가량 움직여요. 별 중에서 가장 빨라요','약 100억 살로 추정되는 늙은 별이에요','맨눈으로는 보이지 않을 만큼 어두워요','지구의 1.4배 크기 행성이 발견됐어요'],
+   stats:{'종류':'적색 왜성 (M형)','거리':'약 5.96광년','특징':'고유 운동 1위'}},
+  {id:'sirius', name:'시리우스', tag:'밤하늘 최고 스타', color:0xcfe8ff, size:2.0, pos:[-26,-6,14],
+   fact:'밤하늘에서 가장 밝게 빛나는 별이에요! 겨울밤에 남쪽 하늘을 보면 보석처럼 반짝여요. 태양보다 두 배나 무거운 하얀 별이에요.',
+   details:'시리우스는 밤하늘에서 가장 밝게 빛나는 별이에요. 큰개자리에 있어서 개의 별이라고도 불러요. 겨울밤 남쪽 하늘에서 보석처럼 반짝여요. 사실은 하얀 별과 작은 백색 왜성이 한 쌍으로 묶여 있답니다.',
+   funFacts:['밤하늘 별 중 가장 밝아요. 등급은 -1.46','태양보다 두 배 무겁고 25배 밝아요','약 8.6광년 떨어져 있어요','짝꿍 별 시리우스 B는 백색 왜성이에요'],
+   stats:{'종류':'A형 주계열성','거리':'약 8.6광년','별자리':'큰개자리'}},
+  {id:'vega', name:'직녀별 (베가)', tag:'여름의 보석', color:0xd8e6ff, size:1.7, pos:[10,14,-22],
+   fact:'여름밤 머리 위에서 반짝이는 밝은 별이에요. 견우와 직녀 이야기에 나오는 바로 그 직녀별이랍니다!',
+   details:'베가, 즉 직녀별은 거문고자리에서 가장 밝은 별이에요. 여름밤 머리 위에서 푸르스름하게 빛나는 모습이 인상적이에요. 약 1만 4천 년 후에는 지구의 북극성이 될 거예요! 견우(알타이르)와 칠월 칠석 이야기로 친숙하지요.',
+   funFacts:['1만 4천 년 뒤에 북극성이 될 거예요','태양보다 40배 밝아요','여름의 대삼각형 별 중 하나예요','별 주위에 먼지 원반이 있어요'],
+   stats:{'종류':'A형 주계열성','거리':'약 25광년','별자리':'거문고자리'}},
+  {id:'betel', name:'베텔게우스', tag:'붉은 거인', color:0xff5e3a, size:2.6, pos:[-12,10,-30],
+   fact:'태양보다 700배나 큰 어마어마한 붉은 거인 별이에요. 나이가 많아서 언젠가 펑! 하고 멋진 불꽃놀이처럼 폭발할 거래요.',
+   details:'베텔게우스는 오리온자리의 오른쪽 어깨에 있는 거대한 적색 초거성이에요. 태양보다 무려 700배나 커요! 만약 태양 자리에 두면 목성 궤도까지 닿을 정도예요. 수명이 거의 끝나가서 언젠가 초신성 폭발을 일으킬 거예요.',
+   funFacts:['태양보다 700배 커요!','약 1,000만 년 안에 초신성 폭발 예정이래요','폭발하면 낮에도 보일 만큼 밝게 빛날 거예요','크기가 변하는 변광성이에요'],
+   stats:{'종류':'적색 초거성','거리':'약 550광년','별자리':'오리온자리'}},
+  {id:'polaris', name:'북극성', tag:'길잡이 별', color:0xfff8e0, size:1.5, pos:[4,24,-12],
+   fact:'언제나 북쪽 하늘 한자리에서 빛나는 길잡이 별이에요. 옛날 사람들은 이 별을 보고 길을 찾았답니다.',
+   details:'북극성은 지구의 자전축이 가리키는 방향에 가까이 있어서 늘 북쪽에 있는 것처럼 보여요. 그래서 옛날 항해사와 여행자들의 길잡이가 되어 줬어요. 사실은 한 별이 아니라 세 별이 모인 삼중성이에요.',
+   funFacts:['지구 자전축이 가리키는 방향이라 거의 안 움직여요','삼중성 — 세 별이 묶여 있어요','북두칠성에서 쉽게 찾을 수 있어요','약 1만 4천 년 뒤에는 베가가 그 역할을 해요'],
+   stats:{'종류':'노란 초거성','거리':'약 430광년','별자리':'작은곰자리'}}
 ];
 
 // ── 기본 셋업 ────────────────────────────────
@@ -380,8 +480,41 @@ function showCard(p){
   document.getElementById('cName').textContent = (p.emoji?p.emoji+' ':'⭐ ') + p.name;
   document.getElementById('cTag').textContent = p.tag;
   document.getElementById('cFact').textContent = p.fact;
+
+  // 확장 카드 내용 채우기
+  document.getElementById('cMoreText').textContent = p.details || '';
+  document.getElementById('cFunFacts').innerHTML =
+    (p.funFacts || []).map(f => `<li>${f}</li>`).join('');
+  document.getElementById('cStats').innerHTML =
+    Object.entries(p.stats || {}).map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  const cutaway = document.getElementById('cCutaway');
+  if(p.cutaway && p.cutaway.length){
+    cutaway.style.display = '';
+    cutaway.innerHTML = renderCutaway(p.cutaway);
+  } else {
+    cutaway.style.display = 'none';
+    cutaway.innerHTML = '';
+  }
+  // 초기엔 접혀 있게
+  document.getElementById('cMore').hidden = true;
+  document.getElementById('moreBtn').textContent = '📖 더 알아보기 ↓';
+
   card.classList.add('show');
+  card.scrollTop = 0;
   speak(`${p.name}. ${p.fact}`);
+}
+
+function renderCutaway(layers){
+  // layers: 안쪽부터 바깥쪽 순. 원은 큰 것부터 그려서 작은 것이 위에 오도록.
+  const size = 100, cx = 50, cy = 50, maxR = 46;
+  const circles = layers.slice().reverse().map(l =>
+    `<circle cx="${cx}" cy="${cy}" r="${l.r*maxR}" fill="${l.color}" stroke="rgba(255,255,255,.18)" stroke-width="0.5"/>`
+  ).join('');
+  const legendItems = layers.slice().reverse().map(l =>
+    `<div><i style="background:${l.color}"></i><span>${l.label}</span></div>`
+  ).join('');
+  return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">${circles}</svg>` +
+         `<div class="legend"><div class="legendTitle">바깥 → 안쪽</div>${legendItems}</div>`;
 }
 document.getElementById('closeBtn').onclick = ()=>{
   card.classList.remove('show');
@@ -424,7 +557,35 @@ speakBtn.onclick = ()=>{
   const pool = mode==='solar' ? bodies : starBodies;
   if(selectedId && pool[selectedId]){
     const p = pool[selectedId].p;
-    speak(`${p.name}. ${p.fact}`);
+    const expanded = !document.getElementById('cMore').hidden;
+    if(expanded && p.details){
+      const facts = (p.funFacts || []).join('. ');
+      speak(`${p.name}. ${p.details} ${facts ? '재미있는 사실도 알려드릴게요. ' + facts : ''}`);
+    } else {
+      speak(`${p.name}. ${p.fact}`);
+    }
+  }
+};
+
+// 더 알아보기 버튼: 카드 확장/축소 + 상세 음성 안내
+document.getElementById('moreBtn').onclick = ()=>{
+  const more = document.getElementById('cMore');
+  const btn = document.getElementById('moreBtn');
+  const willOpen = more.hidden;
+  more.hidden = !willOpen;
+  btn.textContent = willOpen ? '간단히 보기 ↑' : '📖 더 알아보기 ↓';
+  if(willOpen){
+    // 확장 시 자세한 설명을 자동으로 읽어줌
+    const pool = mode==='solar' ? bodies : starBodies;
+    if(selectedId && pool[selectedId]){
+      const p = pool[selectedId].p;
+      if(p.details){
+        const facts = (p.funFacts || []).join('. ');
+        speak(`${p.details} ${facts ? '재미있는 사실도 알려드릴게요. ' + facts : ''}`);
+      }
+    }
+    // 펼쳐진 부분이 보이도록 스크롤
+    setTimeout(()=> more.scrollIntoView({behavior:'smooth', block:'start'}), 80);
   }
 };
 const sndBtn = document.getElementById('sndBtn');
@@ -484,7 +645,6 @@ buildNav();
 
 // ── 애니메이션 루프 ──────────────────────────
 const clock = new THREE.Clock();
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function resize(){
   const w = canvas.clientWidth || innerWidth;
@@ -502,14 +662,12 @@ function tick(){
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
 
-  // 공전 / 자전 — 위치는 항상 갱신, 애니메이션 갱신만 reduceMotion 시 멈춤
+  // 공전 / 자전 — 우주 학습 앱이라 동작 줄이기 설정과 무관하게 항상 움직임
   Object.values(bodies).forEach(b=>{
     const p = b.p;
-    if(!reduceMotion){
-      if(p.isMoon) b.angle += dt*2.2;
-      else if(p.dist>0) b.angle += dt*p.speed*0.12;
-      b.mesh.rotation.y += dt*0.4;
-    }
+    if(p.isMoon) b.angle += dt*2.2;
+    else if(p.dist>0) b.angle += dt*p.speed*0.12;
+    b.mesh.rotation.y += dt*0.4;
     if(p.isMoon){
       const e = bodies.earth.mesh.position;
       b.mesh.position.set(e.x + Math.cos(b.angle)*2.1, e.y, e.z + Math.sin(b.angle)*2.1);
@@ -517,13 +675,10 @@ function tick(){
       b.mesh.position.set(Math.cos(b.angle)*p.dist, 0, Math.sin(b.angle)*p.dist);
     }
   });
-  if(!reduceMotion){
-    // 별 반짝임
-    Object.values(starBodies).forEach((b,i)=>{
-      const glow = b.mesh.children[0];
-      if(glow) glow.material.opacity = 0.75 + Math.sin(t*2 + i*1.7)*0.18;
-    });
-  }
+  Object.values(starBodies).forEach((b,i)=>{
+    const glow = b.mesh.children[0];
+    if(glow) glow.material.opacity = 0.75 + Math.sin(t*2 + i*1.7)*0.18;
+  });
 
   // 선택한 천체 따라가기 + 부드러운 트윈
   if(ctrl.followMesh){
