@@ -543,7 +543,23 @@ let soundOn = true;
 let koVoice = null;
 function pickVoice(){
   const vs = speechSynthesis.getVoices();
-  koVoice = vs.find(v=>v.lang==='ko-KR') || vs.find(v=>v.lang && v.lang.startsWith('ko')) || null;
+  const koreans = vs.filter(v => v.lang === 'ko-KR' || (v.lang && v.lang.startsWith('ko')));
+  if(!koreans.length){ koVoice = null; return; }
+  // 자연스러운 보이스 우선: Enhanced > Premium > Neural > Natural > 그 외
+  // (iOS Settings → 손쉬운 사용 → 음성 콘텐츠 → 음성에서 "유나 (향상됨)" 다운로드 권장)
+  const priority = ['neural','premium','enhanced','natural','향상','고급','siri'];
+  const known = /yuna|heami|sora|nara|jian|seoyeon|sumi|jiwon/i;
+  const score = v => {
+    const n = (v.name || '').toLowerCase();
+    let s = 0;
+    priority.forEach((kw,i)=>{ if(n.includes(kw)) s += (10-i)*100; });
+    if(known.test(v.name||'')) s += 60;
+    if(n.includes('compact') || n.includes('lite')) s -= 80;
+    if(v.localService) s += 10;  // 로컬 보이스가 보통 응답이 빠름
+    return s;
+  };
+  koreans.sort((a,b)=> score(b) - score(a));
+  koVoice = koreans[0];
 }
 if('speechSynthesis' in window){
   pickVoice();
@@ -553,11 +569,18 @@ const speakBtn = document.getElementById('speakBtn');
 function speak(text){
   if(!soundOn || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
+  // 자연스러운 호흡: 마침표·쉼표 뒤에 짧은 공백을 추가해 한 호흡씩 끊어 읽도록 유도
+  const natural = text
+    .replace(/\.\s*/g, '.  ')
+    .replace(/,\s*/g, ',  ')
+    .replace(/!\s*/g, '!  ')
+    .replace(/\?\s*/g, '?  ');
+  const u = new SpeechSynthesisUtterance(natural);
   u.lang = 'ko-KR';
   if(koVoice) u.voice = koVoice;
-  u.rate = 0.92;   // 아이들이 듣기 좋게 살짝 천천히
-  u.pitch = 1.05;
+  u.rate = 0.88;   // 살짝 더 천천히, 아이들이 듣기 좋게
+  u.pitch = 1.0;   // 자연스러운 톤
+  u.volume = 1.0;
   u.onstart = ()=> speakBtn.classList.add('speaking');
   u.onend = u.onerror = ()=> speakBtn.classList.remove('speaking');
   speechSynthesis.speak(u);
@@ -697,7 +720,7 @@ function tick(){
   // 공전 / 자전 — 우주 학습 앱이라 동작 줄이기 설정과 무관하게 항상 움직임
   Object.values(bodies).forEach(b=>{
     const p = b.p;
-    if(p.isMoon) b.angle += dt*2.2;
+    if(p.isMoon) b.angle += dt*0.45;   // 너무 빠르면 따라갈 때 어지러워요 (이전 2.2)
     else if(p.dist>0) b.angle += dt*p.speed*0.12;
     b.mesh.rotation.y += dt*0.4;
     if(p.isMoon){
