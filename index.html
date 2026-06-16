@@ -117,6 +117,17 @@
     #card .name{font-size:19px}
     #card .fact{font-size:15px}
   }
+  /* 아이패드+ 가로 모드: 카드를 오른쪽 사이드바로 (행성과 동시에 보이도록) */
+  @media (min-width: 900px) and (orientation: landscape){
+    #card{
+      left:auto; right:14px; bottom:auto;
+      top:calc(78px + env(safe-area-inset-top));
+      transform:translateY(20px);
+      width:380px;
+      max-height:calc(100dvh - 110px - env(safe-area-inset-top));
+    }
+    #card.show{transform:translateY(0)}
+  }
   @media (prefers-reduced-motion: reduce){
     #hint{animation:none}
     #speakBtn.speaking{animation:none}
@@ -474,6 +485,7 @@ function select(id){
   showCard(b.p);
   highlightPill(id);
   hint.classList.add('hide');
+  updateCameraProjection();
 }
 
 function showCard(p){
@@ -523,6 +535,7 @@ document.getElementById('closeBtn').onclick = ()=>{
   highlightPill(null);
   ctrl.tTarget.set(0,0,0);
   ctrl.tRadius = mode==='solar' ? 70 : 55;
+  updateCameraProjection();
 };
 
 // ── 한국어 음성 (TTS) ────────────────────────
@@ -610,6 +623,7 @@ modeBtn.onclick = ()=>{
   selectedId = null; ctrl.followMesh = null;
   ctrl.tTarget.set(0,0,0);
   ctrl.tRadius = mode==='solar' ? 70 : 55;
+  updateCameraProjection();
   rebuildPickables();
   buildNav();
   if(mode==='stars') speak('우와! 태양계 밖으로 나왔어요. 태양이 작아졌지요? 반짝이는 건 모두 이웃 별들이에요.');
@@ -646,12 +660,30 @@ buildNav();
 // ── 애니메이션 루프 ──────────────────────────
 const clock = new THREE.Clock();
 
+// 카드가 오른쪽 사이드바로 떠 있을 때(아이패드+ 가로), 3D 장면을 살짝 왼쪽으로 옮겨
+// 그려서 행성이 카드 뒤로 숨지 않게 한다. setViewOffset 으로 투영을 좌측으로 시프트.
+const SIDE_CARD_OFFSET_PX = 400;  // 카드 폭(380) + 여유
+function isSideCardMode(){
+  return matchMedia('(min-width: 900px) and (orientation: landscape)').matches;
+}
+function updateCameraProjection(){
+  const w = canvas.clientWidth || innerWidth;
+  const h = canvas.clientHeight || innerHeight;
+  if(isSideCardMode() && selectedId){
+    const fullW = w + SIDE_CARD_OFFSET_PX;
+    camera.aspect = fullW / h;
+    camera.setViewOffset(fullW, h, SIDE_CARD_OFFSET_PX, 0, w, h);
+  } else {
+    camera.aspect = w / h;
+    camera.clearViewOffset();
+  }
+  camera.updateProjectionMatrix();
+}
 function resize(){
   const w = canvas.clientWidth || innerWidth;
   const h = canvas.clientHeight || innerHeight;
   renderer.setSize(w, h, false);
-  camera.aspect = w/h;
-  camera.updateProjectionMatrix();
+  updateCameraProjection();
 }
 addEventListener('resize', resize);
 if(window.visualViewport) window.visualViewport.addEventListener('resize', resize);
