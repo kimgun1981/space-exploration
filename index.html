@@ -257,12 +257,6 @@ const PLANETS = [
    funFacts:['지구의 4분의 3은 바다예요','적도에서 자전 속도가 시속 1,670km나 돼요','약 46억 살이에요','자기장이 있어서 나침반이 작동해요','달이 바닷물을 끌어당겨 밀물과 썰물이 생겨요'],
    stats:{'지름':'12,742 km','태양까지':'1억 5천만 km','하루':'24시간','일 년':'365일','위성':'1개 (달)'},
    cutaway:[{label:'내핵', color:'#ffec80', r:0.2},{label:'외핵', color:'#ff8c42', r:0.55},{label:'맨틀', color:'#c4673b', r:0.93},{label:'지각', color:'#4f9df7', r:1.0}]},
-  {id:'moon', name:'달', tag:'지구의 단짝', emoji:'🌙', color:0xcfcfd6, size:0.27, dist:0, speed:0, isMoon:true,
-   fact:'지구의 단짝 친구예요! 매일 밤 지구 곁을 빙글빙글 돌아요. 어떤 날은 동그란 보름달, 어떤 날은 얇은 눈썹 같은 초승달로 보여요.',
-   details:'달은 지구의 유일한 자연 위성이에요. 약 38만 km 떨어져 있고, 27일에 한 번 지구를 돌아요. 신기하게도 같은 면이 늘 지구를 향해요. 달의 중력 덕분에 바닷물에 밀물과 썰물이 생겨요.',
-   funFacts:['1969년 인간이 처음 발을 디뎠어요 (아폴로 11호)','중력이 지구의 6분의 1이에요. 점프하면 더 높이 뛸 수 있어요!','표면은 운석 구덩이로 가득해요','대기가 거의 없어서 하늘이 까매요'],
-   stats:{'지름':'3,474 km','지구까지':'38만 km','공전 주기':'27일','표면 중력':'지구의 1/6'},
-   cutaway:[{label:'핵', color:'#b8860b', r:0.4},{label:'맨틀', color:'#999999', r:0.9},{label:'지각', color:'#cfcfd6', r:1.0}]},
   {id:'mars', name:'화성', tag:'빨간 행성', emoji:'🔴', color:0xe06b4a, size:0.7, dist:20, speed:0.8,
    fact:'온통 붉은 모래로 덮인 빨간 행성이에요. 지금 이 순간에도 로봇 탐사차가 화성을 누비며 탐험하고 있어요. 언젠가 사람도 갈 수 있을까요?',
    details:'화성은 표면이 산화철, 즉 녹으로 덮여 붉은빛을 띠어요. 태양계에서 가장 큰 화산 올림푸스 산과 가장 깊은 협곡 마리네리스 협곡이 있어요. 옛날에는 물이 흘렀던 흔적이 있어서 생명체 가능성을 탐구하고 있답니다.',
@@ -350,6 +344,151 @@ const STARS = [
    stats:{'종류':'노란 초거성','거리':'약 430광년','별자리':'작은곰자리'}}
 ];
 
+// ── 위성 (각자 모행성 parent 주위를 돈다) ───────
+const MOONS = [
+  {id:'moon', name:'달', tag:'지구의 단짝', emoji:'🌙', color:0xcfcfd6, size:0.27, parent:'earth', orbit:2.1, moonSpeed:0.45,
+   fact:'지구의 단짝 친구예요! 매일 밤 지구 곁을 빙글빙글 돌아요. 어떤 날은 동그란 보름달, 어떤 날은 얇은 눈썹 같은 초승달로 보여요.',
+   details:'달은 지구의 유일한 자연 위성이에요. 약 38만 km 떨어져 있고, 27일에 한 번 지구를 돌아요. 신기하게도 같은 면이 늘 지구를 향해요. 달의 중력 덕분에 바닷물에 밀물과 썰물이 생겨요.',
+   funFacts:['1969년 인간이 처음 발을 디뎠어요 (아폴로 11호)','중력이 지구의 6분의 1이에요. 점프하면 더 높이 뛸 수 있어요!','표면은 운석 구덩이로 가득해요','대기가 거의 없어서 하늘이 까매요'],
+   stats:{'지름':'3,474 km','지구까지':'38만 km','공전 주기':'27일','표면 중력':'지구의 1/6'},
+   cutaway:[{label:'핵', color:'#b8860b', r:0.4},{label:'맨틀', color:'#999999', r:0.9},{label:'지각', color:'#cfcfd6', r:1.0}]},
+  {id:'phobos', name:'포보스', tag:'화성의 달', emoji:'🥔', color:0x9c8576, size:0.13, parent:'mars', orbit:1.25, moonSpeed:1.1,
+   fact:'화성을 도는 작은 감자 모양 위성이에요. 아주 빨리 돌아서 화성에서는 하루에 두 번이나 떠올라요!',
+   details:'포보스는 화성의 두 위성 중 큰 쪽이에요. 감자처럼 울퉁불퉁하게 생겼고, 화성과 아주 가까이 붙어 빠르게 돌아요. 점점 화성에 가까워지고 있어서 먼 미래엔 부서질 수도 있대요.',
+   funFacts:['감자처럼 울퉁불퉁한 모양이에요','화성 하늘에 하루 두 번 떠올라요','조금씩 화성에 가까워지고 있어요','이름은 "두려움"이라는 뜻이에요'],
+   stats:{'지름':'약 22 km','모행성':'화성','특징':'가장 빠른 위성 중 하나'}},
+  {id:'deimos', name:'데이모스', tag:'화성의 달', emoji:'🪨', color:0xa8978a, size:0.1, parent:'mars', orbit:1.85, moonSpeed:0.7,
+   fact:'화성의 더 작은 위성이에요. 너무 작아서 화성에서 보면 밝은 별처럼 보인대요.',
+   details:'데이모스는 화성의 두 위성 중 작은 쪽이에요. 표면이 고운 흙먼지로 부드럽게 덮여 있어요. 포보스와 달리 화성에서 조금씩 멀어지고 있답니다.',
+   funFacts:['화성의 두 위성 중 더 작아요','이름은 "공포"라는 뜻이에요','화성에서 보면 밝은 별처럼 보여요','표면이 고운 먼지로 덮여 있어요'],
+   stats:{'지름':'약 12 km','모행성':'화성','특징':'아주 작은 위성'}},
+  {id:'io', name:'이오', tag:'목성의 달', emoji:'🌋', color:0xe8d36b, size:0.28, parent:'jupiter', orbit:3.5, moonSpeed:0.95,
+   fact:'온통 화산으로 뒤덮인 신기한 위성이에요. 태양계에서 화산이 가장 활발하게 폭발하는 곳이래요!',
+   details:'이오는 목성의 갈릴레이 위성 중 하나로, 태양계에서 화산 활동이 가장 활발한 천체예요. 목성의 강한 중력에 주물러지면서 속이 뜨거워져 끊임없이 화산이 터져요. 표면은 유황 때문에 노랗고 붉어요.',
+   funFacts:['태양계에서 화산이 가장 활발해요','유황 때문에 노랗고 붉은색이에요','1610년 갈릴레이가 발견했어요','목성의 중력에 계속 주물러져요'],
+   stats:{'지름':'3,643 km','모행성':'목성','특징':'화산 활동 1위'}},
+  {id:'europa', name:'유로파', tag:'목성의 달', emoji:'🧊', color:0xd9e4ee, size:0.26, parent:'jupiter', orbit:4.3, moonSpeed:0.78,
+   fact:'얼음으로 뒤덮인 매끈한 위성이에요. 얼음 아래에 거대한 바다가 숨어 있어서 생명체가 있을지도 몰라요!',
+   details:'유로파는 표면이 매끈한 얼음으로 덮인 목성의 위성이에요. 얼음 껍질 아래에 지구 바닷물보다 많은 물이 있을 것으로 보여요. 그래서 생명체가 살 수 있을지 과학자들이 가장 주목하는 곳이랍니다.',
+   funFacts:['얼음 아래에 거대한 바다가 있을 것으로 보여요','지구보다 물이 더 많을 수도 있어요','표면이 태양계에서 가장 매끄러워요','생명체 탐사 1순위 후보예요'],
+   stats:{'지름':'3,122 km','모행성':'목성','특징':'얼음 아래 바다'}},
+  {id:'ganymede', name:'가니메데', tag:'목성의 달', emoji:'🌑', color:0xa9a193, size:0.33, parent:'jupiter', orbit:5.2, moonSpeed:0.62,
+   fact:'태양계에서 가장 큰 위성이에요! 행성인 수성보다도 크답니다. 자기장을 가진 유일한 위성이에요.',
+   details:'가니메데는 태양계에서 가장 큰 위성으로, 행성인 수성보다도 커요. 신기하게도 위성인데 자기장을 가지고 있어요. 얼음과 암석으로 이뤄져 있고, 역시 얼음 아래에 바다가 있을 것으로 추측돼요.',
+   funFacts:['태양계에서 가장 큰 위성이에요','행성인 수성보다도 커요','자기장을 가진 유일한 위성이에요','갈릴레이 위성 중 하나예요'],
+   stats:{'지름':'5,268 km','모행성':'목성','특징':'가장 큰 위성'}},
+  {id:'callisto', name:'칼리스토', tag:'목성의 달', emoji:'⚫', color:0x7d7468, size:0.31, parent:'jupiter', orbit:6.1, moonSpeed:0.5,
+   fact:'운석 구덩이가 가장 많은 위성이에요. 아주 오래된 표면을 그대로 간직하고 있답니다.',
+   details:'칼리스토는 목성의 갈릴레이 위성 중 가장 바깥에 있어요. 태양계에서 운석 구덩이가 가장 빽빽한 표면을 가지고 있어요. 오래도록 거의 변하지 않은 표면이라 태양계의 옛 모습을 알려준답니다.',
+   funFacts:['운석 구덩이가 태양계에서 가장 많아요','아주 오래된 표면을 간직하고 있어요','갈릴레이 위성 중 가장 바깥쪽이에요','얼음과 암석이 섞여 있어요'],
+   stats:{'지름':'4,821 km','모행성':'목성','특징':'운석 구덩이 1위'}},
+  {id:'titan', name:'타이탄', tag:'토성의 달', emoji:'🟠', color:0xe3a857, size:0.32, parent:'saturn', orbit:6.3, moonSpeed:0.45,
+   fact:'두꺼운 공기(대기)를 가진 신기한 위성이에요. 액체 메탄으로 된 강과 호수가 있답니다!',
+   details:'타이탄은 토성의 가장 큰 위성으로, 두꺼운 대기를 가진 보기 드문 위성이에요. 표면에는 물 대신 액체 메탄과 에탄으로 된 강과 호수가 흘러요. 지구를 빼면 표면에 액체가 흐르는 유일한 곳이랍니다.',
+   funFacts:['두꺼운 대기를 가진 위성이에요','메탄으로 된 강과 호수가 있어요','지구 다음으로 표면에 액체가 있어요','2005년 하위헌스 탐사선이 착륙했어요'],
+   stats:{'지름':'5,150 km','모행성':'토성','특징':'대기와 메탄 호수'}},
+  {id:'charon', name:'카론', tag:'명왕성의 달', emoji:'🌗', color:0xb7b0a6, size:0.22, parent:'pluto', orbit:1.05, moonSpeed:0.7,
+   fact:'명왕성의 가장 큰 단짝이에요. 명왕성의 절반만큼이나 커서 둘이 서로 마주 보며 빙글빙글 돌아요!',
+   details:'카론은 명왕성의 가장 큰 위성이에요. 명왕성의 절반 정도로 커서, 다른 위성처럼 한쪽만 도는 게 아니라 둘이 공통 중심을 두고 서로 마주 보며 돌아요. 그래서 "이중 천체"라고도 불려요.',
+   funFacts:['명왕성의 절반만큼이나 커요','둘이 서로 마주 보며 돌아요','2015년 뉴호라이즌스가 가까이서 찍었어요','북극에 붉은 점이 있어요'],
+   stats:{'지름':'1,212 km','모행성':'명왕성','특징':'모행성의 절반 크기'}},
+];
+
+// ── 별자리 (실제 모양을 평면 패턴으로 그린다) ────
+const CONSTS = [
+  {id:'orion', name:'오리온자리', tag:'겨울의 사냥꾼', emoji:'🏹', color:0x9fb6ff, pos:[0,-4,38], frame:20, bright:0,
+   stars:[[-2.0,2.8],[2.0,3.0],[1.0,0.2],[0.2,-0.1],[-0.6,-0.4],[-1.8,-3.0],[1.6,-3.2]],
+   lines:[[0,1],[1,2],[0,4],[2,3],[3,4],[2,6],[4,5]],
+   fact:'겨울밤 남쪽 하늘에서 가장 찾기 쉬운 별자리예요. 사냥꾼 모양이고, 허리에 나란한 별 세 개(삼태성)가 눈에 확 띄어요!',
+   details:'오리온자리는 겨울철 밤하늘의 대표 별자리예요. 그리스 신화 속 사냥꾼 오리온의 모습이지요. 한쪽 어깨의 붉은 베텔게우스와 반대쪽 발의 푸른 리겔, 그리고 허리띠를 이루는 세 별이 유명해요. 허리띠 아래에는 별이 태어나는 오리온 대성운이 있답니다.',
+   funFacts:['붉은 별 베텔게우스가 한쪽 어깨예요','허리의 세 별을 "삼태성"이라고 불러요','삼태성 아래에 별이 태어나는 오리온성운이 있어요','겨울철 남쪽 하늘에서 쉽게 보여요'],
+   stats:{'계절':'겨울','밝은 별':'리겔·베텔게우스','주요 별':'7개'}},
+  {id:'bigdipper', name:'북두칠성', tag:'하늘의 국자', emoji:'🥄', color:0xcfe4ff, pos:[-34,12,6], frame:20, bright:6,
+   stars:[[-3.0,1.2],[-3.0,0.0],[-1.8,-0.3],[-1.7,0.8],[-0.4,1.0],[0.9,1.05],[2.2,0.6]],
+   lines:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]],
+   fact:'국자(주걱) 모양으로 별 일곱 개가 모인, 가장 찾기 쉬운 별 무리예요. 큰곰자리의 일부랍니다!',
+   details:'북두칠성은 큰곰자리의 일부로, 국자처럼 생긴 일곱 개의 밝은 별이에요. 국자 끝의 두 별을 이어 다섯 배쯤 늘리면 북극성을 찾을 수 있어서 길잡이로 쓰였어요. 사계절 내내 북쪽 하늘에서 볼 수 있답니다.',
+   funFacts:['일곱 개의 별이 국자 모양이에요','국자 끝 두 별로 북극성을 찾을 수 있어요','큰곰자리의 일부예요','손잡이 가운데 별 미자르는 사실 쌍둥이 별이에요'],
+   stats:{'별 개수':'7개','속한 별자리':'큰곰자리','쓰임':'북극성 찾기'}},
+  {id:'cassiopeia', name:'카시오페이아자리', tag:'W자 별자리', emoji:'✨', color:0xffe9c9, pos:[30,16,-10], frame:18, bright:-1,
+   stars:[[-2.4,0.0],[-1.2,0.8],[0.0,-0.1],[1.2,0.7],[2.4,0.0]],
+   lines:[[0,1],[1,2],[2,3],[3,4]],
+   fact:'알파벳 W(또는 M) 모양으로 생긴 별자리예요. 북극성을 사이에 두고 북두칠성 반대편에 있어요.',
+   details:'카시오페이아자리는 다섯 개의 밝은 별이 W자 모양을 이루는 별자리예요. 북극성을 중심으로 북두칠성과 마주 보고 있어서, 북두칠성이 안 보일 때 북극성을 찾는 데 도움이 돼요. 신화 속 왕비의 이름이랍니다.',
+   funFacts:['다섯 별이 W(또는 M) 모양이에요','북두칠성과 함께 북극성을 찾는 길잡이예요','북쪽 하늘에서 일 년 내내 보여요','신화 속 에티오피아 왕비의 이름이에요'],
+   stats:{'별 개수':'5개','모양':'W자','계절':'가을~겨울'}},
+  {id:'cygnus', name:'백조자리', tag:'여름의 백조', emoji:'🦢', color:0xd8e6ff, pos:[8,28,-26], frame:20, bright:0,
+   stars:[[0,2.6],[0,0.5],[-2.1,0.0],[2.1,0.2],[0,-2.6]],
+   lines:[[0,1],[1,4],[2,1],[1,3]],
+   fact:'커다란 십자가 모양이라 "북쪽 십자성"이라고도 불러요. 여름밤 머리 위에서 날개를 편 백조처럼 보여요!',
+   details:'백조자리는 여름밤 은하수 위를 날아가는 백조 모양의 별자리예요. 큰 십자 모양이라 "북십자성"이라고도 해요. 꼬리에 있는 가장 밝은 별 데네브는 여름의 대삼각형을 이루는 별 중 하나예요. 부리의 알비레오는 색이 다른 두 별이 나란히 있어 아름답기로 유명해요.',
+   funFacts:['커다란 십자가 모양이라 "북십자성"이라 불려요','꼬리의 데네브는 여름의 대삼각형 별이에요','은하수 한가운데를 가로질러요','부리의 알비레오는 노랑·파랑 두 별이에요'],
+   stats:{'주요 별':'5개','계절':'여름','밝은 별':'데네브'}},
+  {id:'ursaminor', name:'작은곰자리', tag:'작은 국자', emoji:'🐻', color:0xcfe4ff, pos:[-16,28,14], frame:18, bright:0,
+   stars:[[2.6,1.4],[1.5,0.7],[0.4,0.1],[-0.7,-0.2],[-1.7,0.0],[-1.8,1.0],[-0.7,1.0]],
+   lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]],
+   fact:'작은 국자 모양이에요. 손잡이 끝에 길잡이 별인 북극성이 콕 박혀 있답니다!',
+   details:'작은곰자리는 북두칠성을 닮은 작은 국자 모양 별자리예요. 손잡이 맨 끝 별이 바로 북극성이라, 일 년 내내 북쪽 하늘 한자리에서 빛나요. 북두칠성보다 어두워서 찾으려면 깜깜한 곳이 좋아요.',
+   funFacts:['손잡이 끝 별이 북극성이에요','북두칠성을 닮은 작은 국자 모양이에요','일 년 내내 북쪽에서 보여요','별빛이 조금 어두운 편이에요'],
+   stats:{'별 개수':'7개','대표 별':'북극성','계절':'사계절'}},
+  {id:'canismajor', name:'큰개자리', tag:'오리온의 사냥개', emoji:'🐕', color:0xcfe8ff, pos:[-14,-18,30], frame:20, bright:0,
+   stars:[[0.4,2.2],[-1.2,1.4],[0.3,-0.4],[1.4,-1.2],[0.2,-2.4],[-1.2,-2.0]],
+   lines:[[0,1],[0,2],[2,3],[3,4],[4,5],[5,2]],
+   fact:'오리온 사냥꾼을 따라다니는 큰 사냥개예요. 코끝에 밤하늘에서 가장 밝은 별 시리우스가 반짝여요!',
+   details:'큰개자리는 사냥꾼 오리온의 사냥개로 그려지는 별자리예요. 가장 밝은 별 시리우스가 개의 머리 부분에서 밤하늘 별 중 가장 밝게 빛나요. 겨울철 오리온자리 왼쪽 아래에서 쉽게 찾을 수 있어요.',
+   funFacts:['밤하늘에서 가장 밝은 별 시리우스가 있어요','오리온의 사냥개로 불려요','겨울 남쪽 하늘에서 잘 보여요','시리우스는 "개의 별"이라는 별명이 있어요'],
+   stats:{'대표 별':'시리우스','계절':'겨울','특징':'가장 밝은 별 보유'}},
+  {id:'leo', name:'사자자리', tag:'봄의 사자', emoji:'🦁', color:0xfff0cf, pos:[-40,-2,-6], frame:22, bright:0,
+   stars:[[2.0,-1.6],[1.7,-0.5],[1.5,0.6],[1.7,1.4],[2.4,1.6],[-0.4,1.0],[-2.6,0.2],[-0.6,-0.6]],
+   lines:[[0,1],[1,2],[2,3],[3,4],[2,5],[5,6],[6,7],[7,0]],
+   fact:'갈기를 휘날리는 사자 모양 별자리예요. 물음표를 뒤집은 듯한 "낫" 모양 머리가 특징이에요!',
+   details:'사자자리는 봄철 대표 별자리로, 황도 12궁 중 하나예요. 머리와 갈기는 물음표를 뒤집은 모양(낫)으로 그려지고, 그 아래 가장 밝은 별 레굴루스가 사자의 심장처럼 빛나요. 꼬리 끝에는 데네볼라가 있어요.',
+   funFacts:['황도 12궁 중 하나예요','머리는 뒤집힌 물음표(낫) 모양이에요','가장 밝은 별은 레굴루스예요','봄철 밤하늘에서 잘 보여요'],
+   stats:{'대표 별':'레굴루스','계절':'봄','종류':'황도 12궁'}},
+  {id:'scorpius', name:'전갈자리', tag:'여름의 전갈', emoji:'🦂', color:0xff8a6a, pos:[16,-22,26], frame:22, bright:2,
+   stars:[[-1.8,2.6],[-0.4,2.4],[-0.2,1.0],[0.2,-0.2],[0.4,-1.2],[0.0,-2.0],[-0.8,-2.6],[-1.6,-2.4]],
+   lines:[[0,2],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]],
+   fact:'꼬리를 치켜든 전갈 모양 별자리예요. 심장 자리엔 붉게 빛나는 별 안타레스가 있어요!',
+   details:'전갈자리는 여름철 남쪽 하늘 낮게 떠오르는 황도 12궁 별자리예요. 갈고리처럼 휘어진 꼬리가 정말 전갈을 닮았어요. 전갈의 심장 자리에서 붉은 별 안타레스가 빛나는데, "화성의 라이벌"이라는 뜻이래요.',
+   funFacts:['황도 12궁 중 하나예요','붉은 별 안타레스가 심장 자리에 있어요','꼬리가 갈고리처럼 휘어 있어요','안타레스는 "화성의 라이벌"이라는 뜻이에요'],
+   stats:{'대표 별':'안타레스','계절':'여름','종류':'황도 12궁'}},
+  {id:'taurus', name:'황소자리', tag:'겨울의 황소', emoji:'🐂', color:0xffb37a, pos:[28,4,26], frame:20, bright:0,
+   stars:[[1.0,0.0],[0.0,0.5],[-1.2,0.2],[1.8,2.4],[-0.6,2.6]],
+   lines:[[2,1],[1,0],[0,3],[1,4]],
+   fact:'황소의 얼굴이 알파벳 V자 모양이에요. 눈 자리엔 붉은 별 알데바란이 빛나요!',
+   details:'황소자리는 겨울철 황도 12궁 별자리예요. 얼굴은 V자 모양의 별 무리(히아데스)로 그려지고, 한쪽 눈 자리에서 붉은 별 알데바란이 빛나요. 근처에는 좁쌀처럼 모인 별 무리 플레이아데스(좀생이별)도 볼 수 있어요.',
+   funFacts:['황도 12궁 중 하나예요','얼굴이 V자 모양이에요','붉은 별 알데바란이 눈 자리에 있어요','근처에 좀생이별(플레이아데스)이 있어요'],
+   stats:{'대표 별':'알데바란','계절':'겨울','종류':'황도 12궁'}},
+  {id:'gemini', name:'쌍둥이자리', tag:'겨울의 형제', emoji:'👬', color:0xe6ecff, pos:[-28,-12,-22], frame:20, bright:1,
+   stars:[[-1.2,2.4],[0.8,2.4],[-1.4,0.6],[0.6,0.6],[-1.8,-1.6],[0.2,-1.8],[1.4,-0.4]],
+   lines:[[0,1],[0,2],[2,4],[1,3],[3,5],[3,6]],
+   fact:'사이좋은 쌍둥이 형제 모양 별자리예요. 머리 자리에 카스토르와 폴룩스 두 별이 나란히 빛나요!',
+   details:'쌍둥이자리는 겨울철 황도 12궁 별자리예요. 두 형제가 나란히 서 있는 모습으로, 머리 자리에 카스토르와 폴룩스라는 두 밝은 별이 사이좋게 빛나요. 그래서 "쌍둥이"라는 이름이 붙었답니다.',
+   funFacts:['황도 12궁 중 하나예요','머리에 두 밝은 별(카스토르·폴룩스)이 있어요','형제가 나란히 선 모습이에요','겨울 밤하늘에서 잘 보여요'],
+   stats:{'대표 별':'폴룩스·카스토르','계절':'겨울','종류':'황도 12궁'}},
+  {id:'pegasus', name:'페가수스자리', tag:'가을의 날개 달린 말', emoji:'🐴', color:0xd8e6ff, pos:[2,-32,-22], frame:22, bright:-1,
+   stars:[[-1.6,1.6],[1.6,1.6],[1.6,-1.6],[-1.6,-1.6],[-3.2,0.8],[-3.6,-0.4]],
+   lines:[[0,1],[1,2],[2,3],[3,0],[0,4],[4,5]],
+   fact:'날개 달린 말이에요. 몸통이 커다란 네모(가을의 대사각형)라서 찾기 쉬워요!',
+   details:'페가수스자리는 가을철 대표 별자리로, 신화 속 날개 달린 말이에요. 몸통을 이루는 네 별이 커다란 사각형을 만들어 "가을의 대사각형"이라고 불려요. 이 사각형을 길잡이 삼아 주변 별자리를 찾을 수 있어요.',
+   funFacts:['신화 속 날개 달린 말이에요','네 별이 큰 사각형을 이뤄요','"가을의 대사각형"으로 불려요','가을 밤하늘에서 잘 보여요'],
+   stats:{'특징':'가을의 대사각형','계절':'가을','모양':'사각형+목'}},
+  {id:'lyra', name:'거문고자리', tag:'직녀별의 하프', emoji:'🎵', color:0xd8e6ff, pos:[36,-4,-14], frame:16, bright:0,
+   stars:[[0.0,2.2],[-0.7,0.8],[0.7,0.9],[-0.9,-0.6],[0.6,-0.8]],
+   lines:[[0,1],[0,2],[1,2],[2,4],[4,3],[3,1]],
+   fact:'작은 하프(거문고) 모양 별자리예요. 여름밤 머리 위에서 직녀별 베가가 밝게 빛나요!',
+   details:'거문고자리는 여름철 작은 별자리로, 가장 밝은 별이 바로 직녀별 베가예요. 작은 평행사변형 모양의 별들이 하프(거문고)처럼 보여요. 베가는 견우(독수리자리 알타이르)와 칠월칠석 이야기로 유명하지요.',
+   funFacts:['가장 밝은 별이 직녀별 베가예요','작은 하프(거문고) 모양이에요','여름의 대삼각형 별 중 하나예요','견우와 칠월칠석 이야기로 친숙해요'],
+   stats:{'대표 별':'베가(직녀별)','계절':'여름','종류':'작은 별자리'}},
+  {id:'aquila', name:'독수리자리', tag:'견우별의 독수리', emoji:'🦅', color:0xe6ecff, pos:[20,-26,-18], frame:20, bright:0,
+   stars:[[0.0,0.6],[-0.4,1.4],[0.3,-0.2],[-2.4,1.0],[2.4,0.4],[0.2,-2.2]],
+   lines:[[1,0],[0,2],[3,0],[0,4],[0,5]],
+   fact:'날개를 활짝 편 독수리 모양이에요. 한가운데에 견우별 알타이르가 빛나요!',
+   details:'독수리자리는 여름철 별자리로, 가장 밝은 별 알타이르가 바로 견우별이에요. 알타이르 양옆에 작은 별이 하나씩 있어 날개를 편 독수리처럼 보여요. 직녀별 베가와 은하수를 사이에 두고 마주 보고 있답니다.',
+   funFacts:['가장 밝은 별이 견우별 알타이르예요','날개를 편 독수리 모양이에요','여름의 대삼각형 별 중 하나예요','직녀별과 은하수를 사이에 두고 마주 봐요'],
+   stats:{'대표 별':'알타이르(견우별)','계절':'여름','종류':'독수리'}},
+];
+
 // ── 기본 셋업 ────────────────────────────────
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
@@ -424,7 +563,6 @@ function makePlanetMesh(p){
 
 const bodies = {}; // id → {mesh, p, angle, spin}
 PLANETS.forEach(p=>{
-  if(p.isMoon) return;
   const {node, spin} = makePlanetMesh(p);
   solarGroup.add(node);
   bodies[p.id] = {mesh:node, p, angle:Math.random()*Math.PI*2, spin};
@@ -436,11 +574,12 @@ PLANETS.forEach(p=>{
     solarGroup.add(orbit);
   }
 });
-// 달
-const moonData = PLANETS.find(p=>p.id==='moon');
-const moon = makePlanetMesh(moonData);
-solarGroup.add(moon.node);
-bodies.moon = {mesh:moon.node, p:moonData, angle:0, spin:moon.spin};
+// 위성들 — 각자 모행성(parent) 주위를 돈다
+MOONS.forEach(m=>{
+  const {node, spin} = makePlanetMesh(m);
+  solarGroup.add(node);
+  bodies[m.id] = {mesh:node, p:m, angle:Math.random()*Math.PI*2, spin};
+});
 
 // ── 소행성대 (화성 ↔ 목성 사이) ──────────────
 let asteroidBelt;
@@ -482,6 +621,37 @@ STARS.forEach(s=>{
     new THREE.Vector3(...a.pos), new THREE.Vector3(...p.pos)]);
   starGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({color:0x7fd8f5, transparent:true, opacity:.22})));
 })();
+
+// ── 별자리 그룹 ──────────────────────────────
+const constGroup = new THREE.Group();
+constGroup.visible = false;
+scene.add(constGroup);
+const constBodies = {};
+CONSTS.forEach(c=>{
+  const g = new THREE.Group();
+  g.position.set(...c.pos);
+  g.userData = c;
+  const S = 2.4; // 별자리 모양 확대 배율
+  const verts = c.stars.map(s=> new THREE.Vector3(s[0]*S, s[1]*S, 0));
+  c.lines.forEach(([a,b])=>{
+    const lg = new THREE.BufferGeometry().setFromPoints([verts[a], verts[b]]);
+    g.add(new THREE.Line(lg, new THREE.LineBasicMaterial({color:c.color, transparent:true, opacity:.55})));
+  });
+  verts.forEach((v,idx)=>{
+    const r = (c.bright===idx) ? 0.55 : 0.34;
+    const sm = new THREE.Mesh(new THREE.SphereGeometry(r,16,16), new THREE.MeshBasicMaterial({color:0xffffff}));
+    sm.position.copy(v);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(c.color), transparent:true, opacity:.85, depthWrite:false}));
+    glow.scale.setScalar(r*6); sm.add(glow);
+    g.add(sm);
+  });
+  // 탭하기 쉽도록 보이지 않는 큰 구를 둔다 (히트 영역)
+  const pick = new THREE.Mesh(new THREE.SphereGeometry(9,8,8),
+    new THREE.MeshBasicMaterial({transparent:true, opacity:0, depthWrite:false}));
+  g.add(pick);
+  constGroup.add(g);
+  constBodies[c.id] = {mesh:g, p:c};
+});
 
 // ── 카메라 컨트롤 (직접 구현: 드래그 회전 + 핀치/휠 줌) ──
 const ctrl = {
@@ -568,15 +738,23 @@ let selectedId = null;
 const card = document.getElementById('card');
 const hint = document.getElementById('hint');
 
+// 모드별 자료 묶음 헬퍼 (solar / stars / const)
+function poolFor(){ return mode==='solar' ? bodies : mode==='stars' ? starBodies : constBodies; }
+function navListFor(){ return mode==='solar' ? PLANETS.concat(MOONS) : mode==='stars' ? STARS : CONSTS; }
+function labelListFor(){ return mode==='solar' ? PLANETS : mode==='stars' ? STARS : CONSTS; }
+function homeRadius(){ return mode==='solar' ? 70 : mode==='stars' ? 55 : 60; }
+
 function select(id){
-  const pool = mode==='solar' ? bodies : starBodies;
+  const pool = poolFor();
   const b = pool[id];
   if(!b) return;
   selectedId = id;
   ctrl.followMesh = b.mesh;
   const wp = new THREE.Vector3(); b.mesh.getWorldPosition(wp);
   ctrl.tTarget.copy(wp);
-  ctrl.tRadius = mode==='solar' ? Math.max(b.p.size*4.2, 5) : Math.max(b.p.size*6, 7);
+  ctrl.tRadius = mode==='const' ? (b.p.frame || 18)
+               : mode==='solar' ? Math.max(b.p.size*4.2, 5)
+               : Math.max(b.p.size*6, 7);
   showCard(b.p);
   highlightPill(id);
   hint.classList.add('hide');
@@ -631,7 +809,7 @@ document.getElementById('closeBtn').onclick = ()=>{
   selectedId = null; ctrl.followMesh = null;
   highlightPill(null);
   ctrl.tTarget.set(0,0,0);
-  ctrl.tRadius = mode==='solar' ? 70 : 55;
+  ctrl.tRadius = homeRadius();
   updateCameraProjection();
 };
 
@@ -687,7 +865,7 @@ function stopSpeak(){
   speakBtn.classList.remove('speaking');
 }
 speakBtn.onclick = ()=>{
-  const pool = mode==='solar' ? bodies : starBodies;
+  const pool = poolFor();
   if(selectedId && pool[selectedId]){
     const p = pool[selectedId].p;
     const expanded = !document.getElementById('cMore').hidden;
@@ -709,7 +887,7 @@ document.getElementById('moreBtn').onclick = ()=>{
   btn.textContent = willOpen ? '간단히 보기 ↑' : '📖 더 알아보기 ↓';
   if(willOpen){
     // 확장 시 자세한 설명을 자동으로 읽어줌
-    const pool = mode==='solar' ? bodies : starBodies;
+    const pool = poolFor();
     if(selectedId && pool[selectedId]){
       const p = pool[selectedId].p;
       if(p.details){
@@ -738,7 +916,7 @@ homeFab.onclick = ()=>{
   highlightPill(null);
   ctrl.theta = 0.9; ctrl.phi = 1.15;
   ctrl.tTarget.set(0,0,0);
-  ctrl.tRadius = mode==='solar' ? 70 : 55;
+  ctrl.tRadius = homeRadius();
   updateCameraProjection();
 };
 
@@ -803,29 +981,32 @@ quizNextEl.onclick = nextQuiz;
 // ── 모드 전환 (태양계 ↔ 이웃 별) ──────────────
 const modeBtn = document.getElementById('modeBtn');
 modeBtn.onclick = ()=>{
-  mode = mode==='solar' ? 'stars' : 'solar';
+  mode = mode==='solar' ? 'stars' : mode==='stars' ? 'const' : 'solar';
   solarGroup.visible = mode==='solar';
   starGroup.visible  = mode==='stars';
-  modeBtn.textContent = mode==='solar' ? '✨ 이웃 별' : '🪐 태양계';
-  hint.textContent = mode==='solar' ? '행성을 톡 눌러 보세요!' : '반짝이는 별을 눌러 보세요!';
+  constGroup.visible = mode==='const';
+  modeBtn.textContent = mode==='solar' ? '✨ 이웃 별' : mode==='stars' ? '⭐ 별자리' : '🪐 태양계';
+  hint.textContent = mode==='solar' ? '행성을 톡 눌러 보세요!'
+                   : mode==='stars' ? '반짝이는 별을 눌러 보세요!'
+                   : '별자리를 톡 눌러 보세요!';
   hint.classList.remove('hide');
   card.classList.remove('show');
   homeFab.style.display = 'grid';
   stopSpeak();
   selectedId = null; ctrl.followMesh = null;
   ctrl.tTarget.set(0,0,0);
-  ctrl.tRadius = mode==='solar' ? 70 : 55;
+  ctrl.tRadius = homeRadius();
   updateCameraProjection();
   rebuildPickables();
   buildNav();
   buildLabels();
   if(mode==='stars') speak('우와! 태양계 밖으로 나왔어요. 태양이 작아졌지요? 반짝이는 건 모두 이웃 별들이에요.');
+  else if(mode==='const') speak('밤하늘의 별자리를 모았어요. 별자리를 톡 누르면 알려줄게요!');
   else speak('태양계로 돌아왔어요! 행성을 톡 눌러 보세요.');
 };
 function rebuildPickables(){
   pickables.length = 0;
-  const pool = mode==='solar' ? bodies : starBodies;
-  Object.values(pool).forEach(b=> pickables.push(b.mesh));
+  Object.values(poolFor()).forEach(b=> pickables.push(b.mesh));
 }
 rebuildPickables();
 
@@ -833,7 +1014,7 @@ rebuildPickables();
 const nav = document.getElementById('nav');
 function buildNav(){
   nav.innerHTML = '';
-  const list = mode==='solar' ? PLANETS : STARS;
+  const list = navListFor();
   list.forEach(p=>{
     const btn = document.createElement('button');
     btn.className = 'pill'; btn.dataset.id = p.id;
@@ -856,7 +1037,7 @@ const labelMap = {}; // id → element
 function buildLabels(){
   labelsEl.innerHTML = '';
   for(const k in labelMap) delete labelMap[k];
-  const list = mode==='solar' ? PLANETS : STARS;
+  const list = labelListFor();
   list.forEach(p=>{
     const el = document.createElement('button');
     el.className = 'lbl'; el.textContent = p.name;
@@ -872,7 +1053,7 @@ function updateLabels(){
   const moved = camera.position.distanceTo(_lastCam);
   _lastCam.copy(camera.position);
   labelsEl.classList.toggle('moving', pointers.size>0 || moved>0.08);
-  const pool = mode==='solar' ? bodies : starBodies;
+  const pool = poolFor();
   const w = canvas.clientWidth || innerWidth;
   const h = canvas.clientHeight || innerHeight;
   for(const id in labelMap){
@@ -929,13 +1110,13 @@ function tick(){
   // 공전 / 자전 — 우주 학습 앱이라 동작 줄이기 설정과 무관하게 항상 움직임
   Object.values(bodies).forEach(b=>{
     const p = b.p;
-    if(p.isMoon) b.angle += dt*0.45;   // 너무 빠르면 따라갈 때 어지러워요 (이전 2.2)
-    else if(p.dist>0) b.angle += dt*p.speed*0.12;
     b.spin.rotation.y += dt*0.4;
-    if(p.isMoon){
-      const e = bodies.earth.mesh.position;
-      b.mesh.position.set(e.x + Math.cos(b.angle)*2.1, e.y, e.z + Math.sin(b.angle)*2.1);
-    } else if(p.dist>0){
+    if(p.parent){                       // 위성: 모행성 주위를 공전
+      b.angle += dt*(p.moonSpeed || 0.5);
+      const pp = bodies[p.parent].mesh.position, o = p.orbit || 2;
+      b.mesh.position.set(pp.x + Math.cos(b.angle)*o, pp.y, pp.z + Math.sin(b.angle)*o);
+    } else if(p.dist>0){                 // 행성: 태양 주위를 공전
+      b.angle += dt*p.speed*0.12;
       b.mesh.position.set(Math.cos(b.angle)*p.dist, 0, Math.sin(b.angle)*p.dist);
     }
   });
@@ -944,6 +1125,8 @@ function tick(){
     if(glow) glow.material.opacity = 0.75 + Math.sin(t*2 + i*1.7)*0.18;
   });
   if(asteroidBelt) asteroidBelt.rotation.y += dt*0.03;
+  // 별자리는 항상 카메라를 정면으로 향하게 해 모양이 또렷이 보이도록 한다
+  if(constGroup.visible) constGroup.children.forEach(g=> g.quaternion.copy(camera.quaternion));
 
   // 선택한 천체 따라가기 + 부드러운 트윈
   if(ctrl.followMesh){
