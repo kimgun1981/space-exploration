@@ -41,7 +41,7 @@
   .spacer{flex:1}
   .mode,.snd{pointer-events:auto;border:1px solid rgba(234,242,255,.22);background:var(--bubble);color:var(--ink);
     font-family:'Jua',sans-serif;font-size:14px;border-radius:999px;padding:8px 14px;cursor:pointer;
-    backdrop-filter:blur(8px);transition:transform .15s, background .2s}
+    transition:transform .15s, background .2s}
   .mode:active,.snd:active{transform:scale(.94)}
   .snd{width:40px;height:40px;padding:0;display:grid;place-items:center;font-size:17px}
   .snd.off{opacity:.45}
@@ -50,7 +50,7 @@
   #hint{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);
     z-index:9;font-family:'Jua',sans-serif;font-size:15px;color:var(--sky);
     background:var(--bubble);padding:8px 18px;border-radius:999px;border:1px solid rgba(127,216,245,.3);
-    backdrop-filter:blur(8px);animation:float 2.6s ease-in-out infinite;transition:opacity .4s;white-space:nowrap}
+    animation:float 2.6s ease-in-out infinite;transition:opacity .4s;white-space:nowrap}
   @keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
   #hint.hide{opacity:0;pointer-events:none}
 
@@ -58,7 +58,7 @@
   #card{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(86px + env(safe-area-inset-bottom));
     z-index:10;width:min(560px,calc(100% - 24px));max-height:calc(100dvh - 180px);overflow-y:auto;-webkit-overflow-scrolling:touch;
     background:var(--bubble);border:1px solid rgba(127,216,245,.32);
-    border-radius:22px;padding:16px 18px 14px;backdrop-filter:blur(12px);
+    border-radius:22px;padding:16px 18px 14px;
     box-shadow:0 8px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .35s, transform .35s}
   #card.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
   #card .name{font-family:'Jua',sans-serif;font-size:22px;color:var(--sun);display:flex;align-items:center;gap:8px}
@@ -101,9 +101,9 @@
     padding:10px 12px calc(12px + env(safe-area-inset-bottom));scrollbar-width:none;
     mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
   nav::-webkit-scrollbar{display:none}
-  .pill{flex:0 0 auto;font-family:'Jua',sans-serif;font-size:14px;color:var(--ink);background:var(--chip);
+  .pill{flex:0 0 auto;font-family:'Jua',sans-serif;font-size:14px;color:var(--ink);background:rgba(20,28,60,.66);
     border:1px solid rgba(127,216,245,.25);border-radius:999px;padding:9px 15px;cursor:pointer;
-    display:flex;align-items:center;gap:6px;backdrop-filter:blur(6px);transition:transform .15s, background .2s}
+    display:flex;align-items:center;gap:6px;transition:transform .15s, background .2s}
   .pill:active{transform:scale(.93)}
   .pill.on{background:rgba(255,209,102,.22);border-color:var(--sun);color:var(--sun)}
   .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 6px currentColor}
@@ -139,22 +139,22 @@
   #labels.moving{opacity:0}  /* 화면을 움직이는 동안엔 숨겨 떨림(어긋남) 방지 */
   #labels.moving .lbl{pointer-events:none}
   .lbl{position:absolute;left:0;top:0;will-change:transform;font-family:'Jua',sans-serif;font-size:12px;
-    color:var(--ink);background:rgba(11,16,38,.5);border:1px solid rgba(127,216,245,.25);
+    color:var(--ink);background:rgba(11,16,38,.74);border:1px solid rgba(127,216,245,.25);
     border-radius:999px;padding:2px 9px;white-space:nowrap;pointer-events:auto;cursor:pointer;
-    backdrop-filter:blur(4px);opacity:.85;transition:opacity .25s;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+    opacity:.85;transition:opacity .25s;text-shadow:0 1px 4px rgba(0,0,0,.6)}
   .lbl.dim{opacity:0;pointer-events:none}
 
   /* ── 플로팅 버튼 (처음 위치) ── */
   .fab{position:fixed;left:12px;z-index:10;width:44px;height:44px;border-radius:50%;
     border:1px solid rgba(234,242,255,.22);background:var(--bubble);color:var(--ink);
-    font-size:19px;cursor:pointer;backdrop-filter:blur(8px);display:grid;place-items:center;
+    font-size:19px;cursor:pointer;display:grid;place-items:center;
     transition:transform .15s, opacity .25s}
   .fab:active{transform:scale(.9)}
   #homeFab{bottom:calc(64px + env(safe-area-inset-bottom))}
 
   /* ── 퀴즈 ── */
   .quizWrap{position:fixed;inset:0;z-index:20;display:grid;place-items:center;
-    background:rgba(4,8,22,.66);backdrop-filter:blur(6px);padding:18px}
+    background:rgba(4,8,22,.84);padding:18px}
   .quizBox{width:min(440px,100%);background:var(--bubble);border:1px solid rgba(127,216,245,.35);
     border-radius:24px;padding:20px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
   .quizTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
@@ -1052,7 +1052,9 @@ function updateLabels(){
   // 카메라가 움직이는 동안(드래그·확대·트윈)에는 라벨을 숨겨 캔버스와의 어긋남을 없앤다.
   const moved = camera.position.distanceTo(_lastCam);
   _lastCam.copy(camera.position);
-  labelsEl.classList.toggle('moving', pointers.size>0 || moved>0.08);
+  const moving = pointers.size>0 || moved>0.08;
+  labelsEl.classList.toggle('moving', moving);
+  if(moving) return;  // 이동 중엔 라벨이 숨겨지므로 위치 계산을 건너뛴다(성능)
   const pool = poolFor();
   const w = canvas.clientWidth || innerWidth;
   const h = canvas.clientHeight || innerHeight;
